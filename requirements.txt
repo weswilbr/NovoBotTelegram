@@ -1,0 +1,6 @@
+python-telegram-bot==21.9
+psycopg2-binary
+fpdf2
+pillow
+python-telegram-bot[job-queue]
+python-dotenv==1.0.0
