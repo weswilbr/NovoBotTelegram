@@ -15,7 +15,8 @@ from features.business import (
     transfer_factors, brochures, glossary, opportunity, ranking
 )
 from features.community import welcome, events, loyalty, invites, channels
-from features.user_tools.prospect_list import confirmar_dados, cancelar_conversa, remover_prospecto
+# Funções de ConversationHandler (como confirmar_dados) não são importadas aqui,
+# pois são gerenciadas pelo ConversationHandler no main.py.
 from features.training import training, reading_guide
 from features.creative import art_creator
 
@@ -24,6 +25,7 @@ from utils.verification import group_member_required
 
 logger = logging.getLogger(__name__)
 
+# Dicionário que mapeia prefixos de callback_data para as funções de handler correspondentes.
 CALLBACK_ROUTING = {
     # General
     'bonusconstrutor_': callback_bonus_construtor,
@@ -38,11 +40,11 @@ CALLBACK_ROUTING = {
     'voltar_tabelas_principal': tables.callback_tabelas,
     'baixar_video_marketing': marketing.handle_download_callback,
     'kit_': kits.handle_kit_choice,
-    'armazem4life': factory.callback_fabrica4life, # Ajustado para ser mais específico
+    'armazem4life': factory.callback_fabrica4life,
     'envaseprodutos': factory.callback_fabrica4life,
     'novafabrica4life': factory.callback_fabrica4life,
     'fatorestransf_': transfer_factors.callback_fatorestransf_handler,
-    'submenu_panfletos': brochures.callback_folheteria, # Ajustado
+    'submenu_panfletos': brochures.callback_folheteria,
     'catalogo4life': brochures.callback_folheteria,
     'panfletoprodutosnovo': brochures.callback_folheteria,
     'panfletonovo4life': brochures.callback_folheteria,
@@ -50,7 +52,7 @@ CALLBACK_ROUTING = {
     'voltar_menu_principal': brochures.callback_folheteria,
     'glossario': glossary.callback_glossario,
     'baixar_glossario': glossary.callback_glossario,
-    'video_apresentacao': opportunity.callback_apresentacao_oportunidade, # Ajustado
+    'video_apresentacao': opportunity.callback_apresentacao_oportunidade,
     'link_plano_compacto': opportunity.callback_apresentacao_oportunidade,
     'arquivo_plano_compacto': opportunity.callback_apresentacao_oportunidade,
     'plano_completo_slide': opportunity.callback_apresentacao_oportunidade,
@@ -69,11 +71,6 @@ CALLBACK_ROUTING = {
     'telegram': channels.handle_canais_callback,
     'whatsapp': channels.handle_canais_callback,
     'voltar_canais': channels.handle_canais_callback,
-    # User Tools
-    'confirmar': confirmar_dados,
-    'cancelar': cancelar_conversa,
-    'remover_': remover_prospecto,
-    'editar_': 'features.user_tools.prospect_list.editar_prospecto', # Placeholder para conversation handler
     # Training
     'apoio': training.handle_treinamento_callback,
     'tutoriais': training.handle_treinamento_callback,
@@ -93,36 +90,38 @@ CALLBACK_ROUTING = {
 async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Roteador principal para todas as queries de callback."""
     query = update.callback_query
-    if not (query and query.data): return
+    if not (query and query.data):
+        return
 
-    if not await check_flood(update): return
+    # Proteção contra múltiplos cliques rápidos
+    if not await check_flood(update):
+        return
 
     await query.answer()
     callback_data = query.data
-    logger.info(f"Callback recebido: '{callback_data}'")
+    logger.info(f"Callback recebido: '{callback_data}' do usuário {query.from_user.id}")
 
     try:
         handler_to_call = None
         for prefix, handler in CALLBACK_ROUTING.items():
             if callback_data.startswith(prefix):
-                # O handler para 'editar_' é especial, pois inicia uma Conversation.
-                # A lógica real está no main.py, aqui apenas evitamos um erro.
-                if handler == 'features.user_tools.prospect_list.editar_prospecto':
-                    logger.info(f"Callback '{callback_data}' é um ponto de entrada para ConversationHandler, ignorando no roteador.")
-                    return
-
                 handler_to_call = handler
                 break
+        
+        # Callbacks de ConversationHandler (como 'remover_', 'confirmar', etc.)
+        # são capturados pelo próprio ConversationHandler no main.py e não chegarão aqui.
 
         if handler_to_call:
             await handler_to_call(update, context)
         else:
-            logger.warning(f"Nenhum handler para: '{callback_data}'.")
-            await help.ajuda(update, context)
+            logger.warning(f"Nenhum handler encontrado para o callback: '{callback_data}'. Retornando ao menu de ajuda.")
+            if update.effective_message:
+                 await help.ajuda(update, context)
 
     except BadRequest as e:
+        # Erro comum quando o usuário clica em um botão de uma mensagem antiga.
         if "message is not modified" not in str(e).lower():
-            logger.error(f"Erro de BadRequest em '{callback_data}': {e}")
+            logger.error(f"Erro de BadRequest ao processar '{callback_data}': {e}")
     except Exception as e:
-        logger.error(f"Erro inesperado em '{callback_data}': {e}", exc_info=True)
+        logger.error(f"Erro inesperado ao processar '{callback_data}': {e}", exc_info=True)
 
