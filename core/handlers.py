@@ -1,5 +1,6 @@
 # NOME DO ARQUIVO: core/handlers.py
 # REFACTOR: Roteador principal que direciona todas as queries de callback para seus handlers específicos.
+
 import logging
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -14,7 +15,7 @@ from features.business import (
     transfer_factors, brochures, glossary, opportunity, ranking
 )
 from features.community import welcome, events, loyalty, invites, channels
-from features.user_tools.prospect_list import confirmar_dados, cancelar_conversa, remover_prospecto, editar_prospecto
+from features.user_tools.prospect_list import confirmar_dados, cancelar_conversa, remover_prospecto
 from features.training import training, reading_guide
 from features.creative import art_creator
 
@@ -37,12 +38,25 @@ CALLBACK_ROUTING = {
     'voltar_tabelas_principal': tables.callback_tabelas,
     'baixar_video_marketing': marketing.handle_download_callback,
     'kit_': kits.handle_kit_choice,
-    'fabrica_': factory.callback_fabrica4life,
+    'armazem4life': factory.callback_fabrica4life, # Ajustado para ser mais específico
+    'envaseprodutos': factory.callback_fabrica4life,
+    'novafabrica4life': factory.callback_fabrica4life,
     'fatorestransf_': transfer_factors.callback_fatorestransf_handler,
-    'folheteria_': brochures.callback_folheteria,
+    'submenu_panfletos': brochures.callback_folheteria, # Ajustado
+    'catalogo4life': brochures.callback_folheteria,
+    'panfletoprodutosnovo': brochures.callback_folheteria,
+    'panfletonovo4life': brochures.callback_folheteria,
+    'submenu_enqueteimunidade': brochures.callback_folheteria,
+    'voltar_menu_principal': brochures.callback_folheteria,
     'glossario': glossary.callback_glossario,
     'baixar_glossario': glossary.callback_glossario,
-    'apresentacao_': opportunity.callback_apresentacao_oportunidade,
+    'video_apresentacao': opportunity.callback_apresentacao_oportunidade, # Ajustado
+    'link_plano_compacto': opportunity.callback_apresentacao_oportunidade,
+    'arquivo_plano_compacto': opportunity.callback_apresentacao_oportunidade,
+    'plano_completo_slide': opportunity.callback_apresentacao_oportunidade,
+    'powerpoint_apresentacao': opportunity.callback_apresentacao_oportunidade,
+    'arquivo_por_que_4life': opportunity.callback_apresentacao_oportunidade,
+    'link_por_que_4life': opportunity.callback_apresentacao_oportunidade,
     'detalhes_ranking_': ranking.enviar_detalhes_ranking,
     # Community
     'welcome_': welcome.welcome_callbacks_handler,
@@ -59,7 +73,7 @@ CALLBACK_ROUTING = {
     'confirmar': confirmar_dados,
     'cancelar': cancelar_conversa,
     'remover_': remover_prospecto,
-    'editar_': editar_prospecto,
+    'editar_': 'features.user_tools.prospect_list.editar_prospecto', # Placeholder para conversation handler
     # Training
     'apoio': training.handle_treinamento_callback,
     'tutoriais': training.handle_treinamento_callback,
@@ -76,7 +90,7 @@ CALLBACK_ROUTING = {
 }
 
 @group_member_required
-async def callbackqueryhandler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Roteador principal para todas as queries de callback."""
     query = update.callback_query
     if not (query and query.data): return
@@ -91,6 +105,12 @@ async def callbackqueryhandler(update: Update, context: ContextTypes.DEFAULT_TYP
         handler_to_call = None
         for prefix, handler in CALLBACK_ROUTING.items():
             if callback_data.startswith(prefix):
+                # O handler para 'editar_' é especial, pois inicia uma Conversation.
+                # A lógica real está no main.py, aqui apenas evitamos um erro.
+                if handler == 'features.user_tools.prospect_list.editar_prospecto':
+                    logger.info(f"Callback '{callback_data}' é um ponto de entrada para ConversationHandler, ignorando no roteador.")
+                    return
+
                 handler_to_call = handler
                 break
 

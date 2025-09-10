@@ -245,7 +245,7 @@ MEDIA = {
         'video1': 'BAACAgEAAxkBAAIXwWcOcMQR-fS1KNTlj-Z1cFblAZzrAAJiCwACAhOYRgV6N835_vTcNgQ',
         'documento': 'BQACAgEAAxkBAAI4nmdmtA60860qO0S8oVmgkXM5pO6sAALLBAACaqU5RwqVHw4I3chiNgQ',
         'documento1': 'BQACAgEAAxkBAAI4n2dmtA6fAAFYhO0Qahfehtj9jG8_TgACPAQAAniSOUftryz9u6Af_jYE',
-        'documento2': 'BQACAgEAAxkBAAI4oGdmtA4p7qsi_pCdranI8h4aT_O9AAL1BAACJn44RxBiRRjteVm6NgQ',
+        'documento2': 'BAACAgEAAxkBAAI4oGdmtA4p7qsi_pCdranI8h4aT_O9AAL1BAACJn44RxBiRRjteVm6NgQ',
         'documento3': 'BQACAgEAAxkBAAI4oWdmtA5qJ9fhwy8nDerq70sYUfHIAAI9BAACeJI5R1k_-h61nkMAATYE',
         'perfil_mobile': 'AgACAgEAAxkBAAJI5WfpffsHwNx_i3waE3tg9UxaJ64MAAJtrTEbGpNJR7nlMy_PL0kmAQADAgADeQADNgQ',
         'recorte_png': 'BAACAgEAAxkBAAI_7mfEuFXdCANx7nMNdmmrP-_MQ9kDAAIdBAACi5sgRhE48Cw8pjxoNgQ',
