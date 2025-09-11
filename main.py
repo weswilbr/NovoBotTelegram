@@ -28,13 +28,13 @@ from features.business import (
     brochures, glossary, tables, marketing, planning, kits
 )
 from features.community import (
-    welcome, rules, invites, events, channels, loyalty, private_messaging
+    welcome, rules, invites, channels, loyalty, private_messaging
+    # A importação de 'events' foi removida daqui
 )
 from features.creative import art_creator
 from features.general import start, help, bonus_builder
 from features.products import handlers as product_handlers
 from features.training import training, reading_guide
-# A importação de prospect_list foi removida
 from features.user_tools import store_finder
 
 # --- Módulos de Utilitários (Utils) ---
@@ -55,8 +55,6 @@ logger = logging.getLogger(__name__)
 
 def register_command_handlers(application: Application) -> None:
     """Registra todos os manipuladores de comando e de conversa."""
-    
-    # Todos os ConversationHandlers relacionados a prospectos foram removidos.
     
     application.add_handler(store_finder.loja_handler)
 
@@ -87,8 +85,7 @@ def register_command_handlers(application: Application) -> None:
         "canais": channels.canais,
         "fidelidade": loyalty.fidelidade,
         "tabelas": tables.tabelas_menu,
-        "eventos": events.escolher_local_evento,
-        # Todos os comandos de prospectos foram removidos daqui
+        # O comando "eventos" foi removido daqui
         "usage_top": send_top_users_command,
         "usage_reset": reset_usage_data_command,
     }
@@ -104,7 +101,6 @@ def register_callback_handlers(application: Application) -> None:
     application.add_handler(CallbackQueryHandler(
         welcome.handle_verification_callback, pattern=f'^{welcome.VERIFY_MEMBER_CALLBACK}$'
     ))
-    # Todos os handlers de callback de prospectos foram removidos
     
     # Roteador principal para todos os outros callbacks
     application.add_handler(CallbackQueryHandler(callback_router))
@@ -131,7 +127,6 @@ def register_misc_handlers(application: Application) -> None:
 
 async def main() -> None:
     """Ponto de entrada principal para iniciar o bot."""
-    # A chamada para criar a tabela de prospectos foi removida.
 
     try:
         locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
