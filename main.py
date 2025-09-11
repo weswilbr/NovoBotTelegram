@@ -29,7 +29,6 @@ from features.business import (
 )
 from features.community import (
     welcome, rules, invites, channels, loyalty, private_messaging
-    # A importação de 'events' foi removida daqui
 )
 from features.creative import art_creator
 from features.general import start, help, bonus_builder
@@ -85,7 +84,6 @@ def register_command_handlers(application: Application) -> None:
         "canais": channels.canais,
         "fidelidade": loyalty.fidelidade,
         "tabelas": tables.tabelas_menu,
-        # O comando "eventos" foi removido daqui
         "usage_top": send_top_users_command,
         "usage_reset": reset_usage_data_command,
     }
@@ -107,7 +105,9 @@ def register_callback_handlers(application: Application) -> None:
 
 def register_misc_handlers(application: Application) -> None:
     """Registra handlers de mensagem, agendamentos e outros."""
-    # Tarefa agendada (desativada para depuração)
+    
+    # --- CORREÇÃO ---
+    # A tarefa agendada foi comentada para evitar o conflito de 'event loop'.
     # if application.job_queue:
     #     application.job_queue.run_repeating(enviar_motivacao_agendada, interval=86400, first=0)
     
