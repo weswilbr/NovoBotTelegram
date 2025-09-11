@@ -39,7 +39,8 @@ def get_db_connection():
         logger.error(f"Erro ao conectar ao banco de dados: {e}")
         return None
 
-def create_table_if_not_exists():
+# CORREÇÃO 1: A função foi transformada em 'async def'
+async def create_table_if_not_exists():
     """Cria a tabela de prospectos se ela não existir."""
     try:
         with get_db_connection() as conn:
@@ -321,6 +322,5 @@ async def capturar_cidade_edicao(update: Update, context: ContextTypes.DEFAULT_T
         context.user_data.clear()
     return ConversationHandler.END
 
-# Inicializa a tabela ao carregar o módulo
-create_table_if_not_exists()
-
+# CORREÇÃO 2: A chamada desnecessária no final do arquivo foi REMOVIDA.
+# A inicialização agora acontece apenas dentro da função main() em main.py.
