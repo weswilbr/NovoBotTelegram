@@ -1,8 +1,7 @@
-# NOME DO ARQUIVO: main.py (Versão Limpa e Correta)
+# NOME DO ARQUIVO: main.py (Versão Corrigida para Heroku)
 
 import logging
 import locale
-import asyncio
 from telegram import Update
 from telegram.ext import (
     Application,
@@ -48,6 +47,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 def register_command_handlers(application: Application) -> None:
     application.add_handler(store_finder.loja_handler)
     command_handlers = {
@@ -69,20 +69,45 @@ def register_command_handlers(application: Application) -> None:
     for command, handler in command_handlers.items():
         application.add_handler(CommandHandler(command, handler))
 
+
 def register_callback_handlers(application: Application) -> None:
-    application.add_handler(CallbackQueryHandler(welcome.welcome_callbacks_handler, pattern=f'^({welcome.CALLBACK_REGRAS}|{welcome.CALLBACK_INICIO}|{welcome.CALLBACK_MENU}|ajuda_.*)$'))
-    application.add_handler(CallbackQueryHandler(welcome.handle_verification_callback, pattern=f'^{welcome.VERIFY_MEMBER_CALLBACK}$'))
+    application.add_handler(
+        CallbackQueryHandler(
+            welcome.welcome_callbacks_handler,
+            pattern=f'^({welcome.CALLBACK_REGRAS}|{welcome.CALLBACK_INICIO}|{welcome.CALLBACK_MENU}|ajuda_.*)$'
+        )
+    )
+    application.add_handler(
+        CallbackQueryHandler(
+            welcome.handle_verification_callback,
+            pattern=f'^{welcome.VERIFY_MEMBER_CALLBACK}$'
+        )
+    )
     application.add_handler(CallbackQueryHandler(callback_router))
 
+
 def register_misc_handlers(application: Application) -> None:
-    application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome.darboasvindas_handler))
+    application.add_handler(
+        MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome.darboasvindas_handler)
+    )
     if CANAL_ID_2:
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & filters.Chat(chat_id=int(CANAL_ID_2)), welcome.handle_unverified_text_message), group=2)
-    application.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE & ~filters.COMMAND, private_messaging.handle_private_message), group=3)
+        application.add_handler(
+            MessageHandler(
+                filters.TEXT & ~filters.COMMAND & filters.Chat(chat_id=int(CANAL_ID_2)),
+                welcome.handle_unverified_text_message
+            ),
+            group=2
+        )
+    application.add_handler(
+        MessageHandler(filters.TEXT & filters.ChatType.PRIVATE & ~filters.COMMAND,
+                       private_messaging.handle_private_message),
+        group=3
+    )
     application.add_handler(get_file_id_handler(), group=0)
     application.add_handler(setup_group_id_handler())
 
-async def main() -> None:
+
+def main() -> None:
     try:
         locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
     except locale.Error:
@@ -91,7 +116,7 @@ async def main() -> None:
     if not BOT_TOKEN:
         logger.critical("CRITICAL: BOT_TOKEN não está definido!")
         return
-        
+
     application = ApplicationBuilder().token(BOT_TOKEN).build()
     application.bot_data['usage_tracker'] = UsageTracker()
 
@@ -101,7 +126,8 @@ async def main() -> None:
     application.add_error_handler(error_handler)
 
     logger.info("Bot iniciado com sucesso. Aguardando updates...")
-    await application.run_polling(allowed_updates=Update.ALL_TYPES)
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
+
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()
