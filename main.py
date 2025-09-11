@@ -4,7 +4,7 @@
 import logging
 import locale
 import asyncio
-from telegram import Update # Importação necessária adicionada
+from telegram import Update
 from telegram.ext import (
     Application,
     ApplicationBuilder,
@@ -117,7 +117,6 @@ def register_command_handlers(application: Application) -> None:
 
 def register_callback_handlers(application: Application) -> None:
     """Registra o roteador principal de callbacks e handlers específicos."""
-    # Handlers específicos que precisam ser registrados antes do roteador geral
     application.add_handler(CallbackQueryHandler(
         welcome.welcome_callbacks_handler,
         pattern=f'^({welcome.CALLBACK_REGRAS}|{welcome.CALLBACK_INICIO}|{welcome.CALLBACK_MENU}|ajuda_.*)$'
@@ -125,25 +124,20 @@ def register_callback_handlers(application: Application) -> None:
     application.add_handler(CallbackQueryHandler(
         welcome.handle_verification_callback, pattern=f'^{welcome.VERIFY_MEMBER_CALLBACK}$'
     ))
-    # A LINHA ABAIXO FOI REMOVIDA POIS A FUNÇÃO 'confirmar_dados' NÃO EXISTE EM prospect_list.py
-    # application.add_handler(CallbackQueryHandler(
-    #     prospect_list.confirmar_dados, pattern='^confirmar$'
-    # ))
     application.add_handler(CallbackQueryHandler(
         prospect_list.cancelar_conversa, pattern='^cancelar$'
     ))
     application.add_handler(CallbackQueryHandler(
         prospect_list.remover_prospecto, pattern='^remover_'
     ))
-    
-    # Roteador principal para todos os outros callbacks
     application.add_handler(CallbackQueryHandler(callback_router))
 
 def register_misc_handlers(application: Application) -> None:
     """Registra handlers de mensagem, agendamentos e outros."""
     # Tarefa agendada
-    if application.job_queue:
-        application.job_queue.run_repeating(enviar_motivacao_agendada, interval=86400, first=0)
+    # CORREÇÃO: A linha abaixo foi comentada para testar se ela é a causa do conflito de event loop.
+    # if application.job_queue:
+    #     application.job_queue.run_repeating(enviar_motivacao_agendada, interval=86400, first=0)
     
     # Handlers de Mensagem
     application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome.darboasvindas_handler))
@@ -163,32 +157,25 @@ def register_misc_handlers(application: Application) -> None:
 
 async def main() -> None:
     """Ponto de entrada principal para iniciar o bot."""
-    # Garante que a tabela de prospectos exista antes de iniciar
     await prospect_list.create_table_if_not_exists()
 
-    # Configuração do Locale
     try:
         locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
     except locale.Error:
         logger.warning("Locale 'pt_BR.UTF-8' não encontrado. Usando fallback.")
 
-    # Construção da Aplicação
     if not BOT_TOKEN:
         logger.critical("CRITICAL: BOT_TOKEN não está definido!")
         return
         
     application = ApplicationBuilder().token(BOT_TOKEN).build()
-
-    # Inicialização de dados do bot
     application.bot_data['usage_tracker'] = UsageTracker()
 
-    # Registro de Handlers
     register_command_handlers(application)
     register_callback_handlers(application)
     register_misc_handlers(application)
     application.add_error_handler(error_handler)
 
-    # Iniciar o Bot
     logger.info("Bot iniciado com sucesso. Aguardando updates...")
     await application.run_polling(allowed_updates=Update.ALL_TYPES)
 
