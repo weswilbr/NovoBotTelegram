@@ -1,5 +1,6 @@
 # Força a instalação da versão estável mais recente da biblioteca do Telegram
 python-telegram-bot==21.1.1
 
-# Biblioteca para conectar ao banco de dados PostgreSQL
-psycopg2-binary
+# Bibliotecas opcionais, mas recomendadas
+python-dotenv
+fpdf

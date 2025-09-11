@@ -1,7 +1,4 @@
-# NOME DO ARQUIVO: main.py
-
-import nest_asyncio
-nest_asyncio.apply()
+# NOME DO ARQUIVO: main.py (Versão Limpa e Correta)
 
 import logging
 import locale
@@ -14,10 +11,7 @@ from telegram.ext import (
     MessageHandler,
     CallbackQueryHandler,
     filters,
-    ExtBot
 )
-from telegram.constants import Limits
-from httpx import AsyncClient
 
 # --- Módulos de Configuração e Core ---
 from config import BOT_TOKEN, CANAL_ID_2
@@ -98,10 +92,7 @@ async def main() -> None:
         logger.critical("CRITICAL: BOT_TOKEN não está definido!")
         return
         
-    http_client = AsyncClient(http2=True, limits=Limits(max_connections=100, max_keepalive_connections=20))
-    bot = ExtBot(token=BOT_TOKEN, http_client=http_client)
-    application = ApplicationBuilder().bot(bot).build()
-
+    application = ApplicationBuilder().token(BOT_TOKEN).build()
     application.bot_data['usage_tracker'] = UsageTracker()
 
     register_command_handlers(application)
