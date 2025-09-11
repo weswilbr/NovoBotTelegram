@@ -1,6 +1,11 @@
-python-telegram-bot==21.9
-psycopg2-binary
-fpdf2
-pillow
-python-telegram-bot[job-queue]
-python-dotenv==1.0.0
+# Telegram Bot
+python-telegram-bot==21.1.1
+
+# Banco de Dados PostgreSQL
+psycopg2-binary==2.9.9
+
+# Geração de PDF
+fpdf==1.7.2
+
+# Utilitários (se você usa)
+python-dotenv==1.0.1
