@@ -14,7 +14,8 @@ from features.business import (
     planning, tables, marketing, kits, factory,
     transfer_factors, brochures, glossary, opportunity, ranking
 )
-from features.community import welcome, events, loyalty, invites, channels
+# CORREÇÃO: 'events' foi removido da linha de importação abaixo
+from features.community import welcome, loyalty, invites, channels
 # Funções de ConversationHandler (como confirmar_dados) não são importadas aqui,
 # pois são gerenciadas pelo ConversationHandler no main.py.
 from features.training import training, reading_guide
@@ -63,7 +64,8 @@ CALLBACK_ROUTING = {
     # Community
     'welcome_': welcome.welcome_callbacks_handler,
     'verify_member': welcome.handle_verification_callback,
-    'evento_': events.enviar_evento,
+    # CORREÇÃO: A linha de roteamento de eventos foi removida abaixo
+    # 'evento_': events.enviar_evento,
     'fidelidade_': loyalty.callback_fidelidade,
     'convite_': invites.enviar_convite,
     'voltar_convites': invites.mostrar_convites,
@@ -124,4 +126,3 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             logger.error(f"Erro de BadRequest ao processar '{callback_data}': {e}")
     except Exception as e:
         logger.error(f"Erro inesperado ao processar '{callback_data}': {e}", exc_info=True)
-
