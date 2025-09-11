@@ -4,6 +4,7 @@
 import logging
 import locale
 import asyncio
+from telegram import Update # Importação necessária adicionada
 from telegram.ext import (
     Application,
     ApplicationBuilder,
@@ -124,9 +125,10 @@ def register_callback_handlers(application: Application) -> None:
     application.add_handler(CallbackQueryHandler(
         welcome.handle_verification_callback, pattern=f'^{welcome.VERIFY_MEMBER_CALLBACK}$'
     ))
-    application.add_handler(CallbackQueryHandler(
-        prospect_list.confirmar_dados, pattern='^confirmar$'
-    ))
+    # A LINHA ABAIXO FOI REMOVIDA POIS A FUNÇÃO 'confirmar_dados' NÃO EXISTE EM prospect_list.py
+    # application.add_handler(CallbackQueryHandler(
+    #     prospect_list.confirmar_dados, pattern='^confirmar$'
+    # ))
     application.add_handler(CallbackQueryHandler(
         prospect_list.cancelar_conversa, pattern='^cancelar$'
     ))
@@ -192,4 +194,3 @@ async def main() -> None:
 
 if __name__ == '__main__':
     asyncio.run(main())
-
