@@ -34,7 +34,8 @@ from features.creative import art_creator
 from features.general import start, help, bonus_builder
 from features.products import handlers as product_handlers
 from features.training import training, reading_guide
-from features.user_tools import store_finder, prospect_list
+# A importação de prospect_list foi removida
+from features.user_tools import store_finder
 
 # --- Módulos de Utilitários (Utils) ---
 from utils.error_handler import error_handler
@@ -55,27 +56,8 @@ logger = logging.getLogger(__name__)
 def register_command_handlers(application: Application) -> None:
     """Registra todos os manipuladores de comando e de conversa."""
     
-    # Handlers de Conversa
-    prospect_conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("prospectos_add", prospect_list.adicionar_prospecto_conversa)],
-        states={
-            prospect_list.NOME: [MessageHandler(filters.TEXT & ~filters.COMMAND, prospect_list.capturar_nome)],
-            prospect_list.TELEFONE: [MessageHandler(filters.TEXT & ~filters.COMMAND, prospect_list.capturar_telefone)],
-            prospect_list.CIDADE: [MessageHandler(filters.TEXT & ~filters.COMMAND, prospect_list.capturar_cidade)],
-        },
-        fallbacks=[CommandHandler("cancelar", prospect_list.cancelar_conversa)],
-    )
-    edit_prospect_conv_handler = ConversationHandler(
-        entry_points=[CallbackQueryHandler(prospect_list.editar_prospecto, pattern='^editar_')],
-        states={
-            prospect_list.EDITAR_NOME: [MessageHandler(filters.TEXT & ~filters.COMMAND, prospect_list.capturar_nome_edicao)],
-            prospect_list.EDITAR_TELEFONE: [MessageHandler(filters.TEXT & ~filters.COMMAND, prospect_list.capturar_telefone_edicao)],
-            prospect_list.EDITAR_CIDADE: [MessageHandler(filters.TEXT & ~filters.COMMAND, prospect_list.capturar_cidade_edicao)],
-        },
-        fallbacks=[CommandHandler("cancelar", prospect_list.cancelar_conversa)],
-    )
-    application.add_handler(prospect_conv_handler)
-    application.add_handler(edit_prospect_conv_handler)
+    # Todos os ConversationHandlers relacionados a prospectos foram removidos.
+    
     application.add_handler(store_finder.loja_handler)
 
     # Handlers de Comando Simples
@@ -106,9 +88,7 @@ def register_command_handlers(application: Application) -> None:
         "fidelidade": loyalty.fidelidade,
         "tabelas": tables.tabelas_menu,
         "eventos": events.escolher_local_evento,
-        "prospectos_listar": prospect_list.listar_prospectos,
-        "prospectos_relatorio": prospect_list.gerar_relatorio_comando,
-        "prospectos_pdf": prospect_list.enviar_pdf,
+        # Todos os comandos de prospectos foram removidos daqui
         "usage_top": send_top_users_command,
         "usage_reset": reset_usage_data_command,
     }
@@ -124,22 +104,17 @@ def register_callback_handlers(application: Application) -> None:
     application.add_handler(CallbackQueryHandler(
         welcome.handle_verification_callback, pattern=f'^{welcome.VERIFY_MEMBER_CALLBACK}$'
     ))
-    application.add_handler(CallbackQueryHandler(
-        prospect_list.cancelar_conversa, pattern='^cancelar$'
-    ))
-    application.add_handler(CallbackQueryHandler(
-        prospect_list.remover_prospecto, pattern='^remover_'
-    ))
+    # Todos os handlers de callback de prospectos foram removidos
+    
+    # Roteador principal para todos os outros callbacks
     application.add_handler(CallbackQueryHandler(callback_router))
 
 def register_misc_handlers(application: Application) -> None:
     """Registra handlers de mensagem, agendamentos e outros."""
-    # Tarefa agendada
-    # CORREÇÃO: A linha abaixo foi comentada para testar se ela é a causa do conflito de event loop.
+    # Tarefa agendada (desativada para depuração)
     # if application.job_queue:
     #     application.job_queue.run_repeating(enviar_motivacao_agendada, interval=86400, first=0)
     
-    # Handlers de Mensagem
     application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome.darboasvindas_handler))
     if CANAL_ID_2:
         application.add_handler(MessageHandler(
@@ -151,13 +126,12 @@ def register_misc_handlers(application: Application) -> None:
         private_messaging.handle_private_message
     ), group=3)
     
-    # Handlers de utilidade
     application.add_handler(get_file_id_handler(), group=0)
     application.add_handler(setup_group_id_handler())
 
 async def main() -> None:
     """Ponto de entrada principal para iniciar o bot."""
-    await prospect_list.create_table_if_not_exists()
+    # A chamada para criar a tabela de prospectos foi removida.
 
     try:
         locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
