@@ -1,11 +1,11 @@
-# Telegram Bot
+# Força a instalação da versão estável mais recente da biblioteca do Telegram
 python-telegram-bot==21.1.1
 
-# Banco de Dados PostgreSQL
+# Biblioteca para conectar ao banco de dados PostgreSQL
 psycopg2-binary==2.9.9
 
-# Geração de PDF
+# Biblioteca para gerar PDFs (se você a usa em outros arquivos)
 fpdf==1.7.2
 
-# Utilitários (se você usa)
+# Biblioteca para carregar variáveis de ambiente (boa prática)
 python-dotenv==1.0.1
