@@ -1,8 +1,12 @@
 # NOME DO ARQUIVO: main.py
 # REFACTOR: Ponto de entrada principal do bot, responsável por inicializar e registrar todos os handlers.
+
+# --- Importações Padrão ---
 import logging
 import sys
 import locale
+
+# --- Importações do Telegram ---
 from telegram.ext import (
     Application,
     ApplicationBuilder,
@@ -14,9 +18,11 @@ from telegram.ext import (
 )
 
 # --- Carregamento da Configuração ---
+# É uma ótima prática isolar as configurações, como tokens e IDs.
 from config import BOT_TOKEN, CANAL_ID_2
 
-# --- Handlers Principais ---
+# --- Handlers da Aplicação ---
+# A estrutura modularizada com handlers em seus próprios diretórios é excelente.
 from core.handlers import callback_router
 from features.admin.commands import (
     listar_admins, silenciar, banir, desbanir, fixar, desfixar, enviartextocanal
@@ -35,14 +41,6 @@ from features.user_tools.prospect_list import (
     editar_prospecto, capturar_nome_edicao, capturar_telefone_edicao, capturar_cidade_edicao,
     remover_prospecto, NOME, TELEFONE, CIDADE, EDITAR_NOME, EDITAR_TELEFONE, EDITAR_CIDADE
 )
-from utils.error_handler import error_handler
-from utils.get_file_id import get_file_id_handler
-from utils.get_group_id import setup_group_id_handler # <-- CORRIGIDO AQUI
-from utils.monitoring.commands import send_top_users_command, reset_usage_data_command
-from utils.monitoring.motivation import enviar_motivacao_agendada
-from utils.monitoring.tracker import UsageTracker
-
-# --- Mapeamento de Comandos ---
 from features.business.opportunity import apresentacaooportunidade
 from features.business.brochures import folheteria
 from features.business.glossary import glossario
@@ -62,7 +60,16 @@ from features.community.loyalty import fidelidade
 from features.business.tables import tabelas_menu
 from features.community.events import escolher_local_evento
 
-# Configuração do Logging
+# --- Utilitários ---
+from utils.error_handler import error_handler
+from utils.get_file_id import get_file_id_handler
+from utils.get_group_id import setup_group_id_handler
+from utils.monitoring.commands import send_top_users_command, reset_usage_data_command
+from utils.monitoring.motivation import enviar_motivacao_agendada
+from utils.monitoring.tracker import UsageTracker
+
+# --- Configuração do Logging ---
+# Essencial para depuração e monitoramento do bot em produção.
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -71,25 +78,25 @@ logger = logging.getLogger(__name__)
 
 def main() -> None:
     """Função principal que inicializa e executa o bot."""
-    # Validação do Token
+    # Validação do Token do Bot
     if not BOT_TOKEN:
-        logger.critical("CRITICAL: BOT_TOKEN não foi encontrado. O bot não pode iniciar.")
+        logger.critical("CRÍTICO: A variável BOT_TOKEN não foi encontrada. O bot não pode iniciar.")
         sys.exit(1)
 
-    # Configuração do Locale
+    # Configuração de Localização para o Brasil (datas, moeda, etc.)
     try:
         locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
     except locale.Error:
-        logger.warning("Locale 'pt_BR.UTF-8' não encontrado. Usando fallback.")
+        logger.warning("Locale 'pt_BR.UTF-8' não suportado no sistema. Usando o locale padrão.")
 
     # Construtor da Aplicação
-    builder = ApplicationBuilder().token(BOT_TOKEN)
-    application = builder.build()
+    application = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    # Armazena o tracker no bot_data
+    # Inicializa e armazena o tracker de uso no contexto do bot
     application.bot_data['usage_tracker'] = UsageTracker()
 
-    # --- Handlers de Conversa ---
+    # --- Definição de Handlers de Conversa ---
+    # Usar ConversationHandler é a forma correta de lidar com diálogos de múltiplos passos.
     prospect_list_conv_handler = ConversationHandler(
         entry_points=[CommandHandler("addprospecto", adicionar_prospecto_conversa)],
         states={
@@ -98,7 +105,9 @@ def main() -> None:
             CIDADE: [MessageHandler(filters.TEXT & ~filters.COMMAND, capturar_cidade)],
         },
         fallbacks=[CommandHandler("cancelar", cancelar_conversa)],
+        per_user=True # Garante que conversas de diferentes usuários não se misturem
     )
+
     edit_prospect_conv_handler = ConversationHandler(
         entry_points=[CallbackQueryHandler(editar_prospecto, pattern='^editar_')],
         states={
@@ -107,10 +116,12 @@ def main() -> None:
             EDITAR_CIDADE: [MessageHandler(filters.TEXT & ~filters.COMMAND, capturar_cidade_edicao)],
         },
         fallbacks=[CommandHandler("cancelar", cancelar_conversa)],
+        per_user=True # Garante que conversas de diferentes usuários não se misturem
     )
 
-    # --- Registro de Handlers ---
-    # Comandos
+    # --- Registro de Handlers na Aplicação ---
+
+    # 1. Comandos: Usar um dicionário para registrar comandos torna o código mais limpo e escalável.
     command_handlers = {
         "start": start, "ajuda": ajuda, "produtos": beneficiosprodutos,
         "apresentacaooportunidade": apresentacaooportunidade, "folheteria": folheteria,
@@ -128,34 +139,45 @@ def main() -> None:
     for command, handler in command_handlers.items():
         application.add_handler(CommandHandler(command, handler))
 
-    # Handlers de Conversa
+    # 2. Handlers de Conversa
     application.add_handler(prospect_list_conv_handler)
     application.add_handler(edit_prospect_conv_handler)
 
-    # Callbacks
+    # 3. Callbacks de Botões Inline
+    # Handlers mais específicos (com padrões mais restritos) devem vir primeiro.
     application.add_handler(CallbackQueryHandler(welcome_callbacks_handler, pattern=f'^({CALLBACK_REGRAS}|{CALLBACK_INICIO}|{CALLBACK_MENU}|ajuda_.*)$'))
     application.add_handler(CallbackQueryHandler(handle_verification_callback, pattern=f'^{VERIFY_MEMBER_CALLBACK}$'))
-    application.add_handler(CallbackQueryHandler(callback_router)) # Roteador genérico
+    application.add_handler(CallbackQueryHandler(callback_router)) # Roteador genérico por último
 
-    # Mensagens
+    # 4. Handlers de Mensagem
     application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, darboasvindas_handler))
     application.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE & ~filters.COMMAND, handle_private_message))
+    
+    # Adiciona handler para mensagens em um canal específico apenas se o ID estiver configurado.
     if CANAL_ID_2:
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & filters.Chat(chat_id=int(CANAL_ID_2)), handle_unverified_text_message))
+        try:
+            channel_id = int(CANAL_ID_2)
+            application.add_handler(MessageHandler(
+                filters.TEXT & ~filters.COMMAND & filters.Chat(chat_id=channel_id), 
+                handle_unverified_text_message
+            ))
+        except ValueError:
+            logger.error(f"A variável CANAL_ID_2 ('{CANAL_ID_2}') não é um ID de chat válido.")
 
-    # Outros Handlers
+    # 5. Handlers Utilitários
     application.add_handler(get_file_id_handler())
-    application.add_handler(setup_group_id_handler()) # <-- CORRIGIDO AQUI
-    application.add_error_handler(error_handler)
+    application.add_handler(setup_group_id_handler())
+    application.add_error_handler(error_handler) # Essencial para capturar e logar erros
 
-    # Tarefas Agendadas
+    # --- Tarefas Agendadas (Jobs) ---
+    # Verifica se a Job Queue está disponível antes de agendar tarefas.
     if application.job_queue:
+        # Envia uma mensagem a cada 24 horas (86400 segundos).
         application.job_queue.run_repeating(enviar_motivacao_agendada, interval=86400, first=0)
 
-    # Iniciar o Bot
-    logger.info("Bot iniciado com sucesso. Aguardando updates...")
+    # --- Iniciar o Bot ---
+    logger.info("Bot iniciado com sucesso. Aguardando atualizações...")
     application.run_polling()
 
 if __name__ == '__main__':
     main()
-
