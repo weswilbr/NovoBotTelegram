@@ -1,4 +1,4 @@
-# NOME DO ARQUIVO: config.py  
+# NOME DO ARQUIVO: config.py   
 # REFACTOR: Centraliza a configuração do bot a partir de variáveis de ambiente.
 import os
 from dotenv import load_dotenv
