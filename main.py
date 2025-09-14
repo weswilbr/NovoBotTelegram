@@ -1,5 +1,5 @@
 # NOME DO ARQUIVO: main.py
-# REFACTOR: Versão final para Vercel, com import corrigido para help_command.py.
+# REFACTOR: Versão final, removendo a funcionalidade de eventos.
 
 # --- Importações Padrão e de Terceiros ---
 import logging
@@ -22,7 +22,6 @@ from core.handlers import callback_router
 from features.admin.commands import (
     listar_admins, silenciar, banir, desbanir, fixar, desfixar, enviartextocanal
 )
-# IMPORT CORRIGIDO ABAIXO
 from features.general.help_command import start, ajuda
 from features.community.private_messaging import handle_private_message
 from features.community.welcome import (
@@ -47,7 +46,8 @@ from features.business.ranking import mostrar_ranking
 from features.community.channels import canais
 from features.community.loyalty import fidelidade
 from features.business.tables import tabelas_menu
-from features.community.events import escolher_local_evento
+# A LINHA ABAIXO FOI REMOVIDA
+# from features.community.events import escolher_local_evento
 
 # --- Utilitários e Monitoramento ---
 from utils.error_handler import error_handler
@@ -84,7 +84,9 @@ command_handlers = {
     "fatorestransferencia": fatorestransferencia, "fabrica4life": fabrica4life,
     "bonusconstrutor": bonus_construtor, "regras": mostrar_regras, "convite": mostrar_convites,
     "artes": artes, "treinamento": treinamento, "ranking": mostrar_ranking, "canais": canais,
-    "fidelidade": fidelidade, "tabelas": tabelas_menu, "eventos": escolher_local_evento,
+    "fidelidade": fidelidade, "tabelas": tabelas_menu,
+    # A LINHA ABAIXO FOI REMOVIDA
+    # "eventos": escolher_local_evento,
 }
 for command, handler in command_handlers.items():
     ptb_app.add_handler(CommandHandler(command, track_command_usage(handler)))
