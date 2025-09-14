@@ -15,7 +15,6 @@ from features.products import handlers as product_handlers
 from features.training import training
 from features.creative import art_creator
 from features.general import bonus_builder
-# CORREÇÃO: A importação de 'prospect_list' foi implicitamente removida ao não ser mais usada.
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +30,7 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     data = query.data
     logger.info(f"Callback roteado: '{data}' do usuário {query.from_user.id}")
 
+    # --- Roteamento para Módulos Aprimorados ---
     if data.startswith(('brochure_', 'folheteria_')):
         await brochures.brochures_callback_handler(update, context)
     elif data.startswith('factory_'):
@@ -49,13 +49,13 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await tables.tables_callback_handler(update, context)
     elif data.startswith('tfactors_'):
         await transfer_factors.transfer_factors_callback_handler(update, context)
-    # CORREÇÃO: A rota para 'editar_prospecto_' foi removida daqui.
+    elif data.startswith('bbuilder_'):
+        await bonus_builder.bonus_builder_callback_handler(update, context)
+    # CORREÇÃO APLICADA ABAIXO: Usando o novo handler e prefixo do módulo de Produtos.
+    elif data.startswith('products_'):
+        await product_handlers.products_callback_handler(update, context)
 
     # --- Roteamento para Módulos Não Refatorados (Mantendo Lógica Original) ---
-    elif data.startswith('beneficio') or data.startswith('produtos_individuais') or data == 'voltar_produtos':
-        await product_handlers.callback_beneficios_handler(update, context)
-    elif data.startswith('bonusconstrutor_'):
-        await bonus_builder.callback_bonus_construtor(update, context)
     elif data.startswith('convite_'):
         await invites.enviar_convite(update, context)
     elif data == 'voltar_convites':
