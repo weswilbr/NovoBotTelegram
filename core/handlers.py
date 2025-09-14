@@ -6,8 +6,6 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 # --- Importação dos Módulos com Handlers de Callback ---
-# Importamos os MÓDULOS, não mais as funções individuais. Isso é mais limpo e organizado.
-# As importações de 'kits' e 'reading_guide' foram REMOVIDAS.
 from features.business import (
     brochures, factory, glossary, marketing, opportunity,
     planning, ranking, tables, transfer_factors
@@ -17,6 +15,7 @@ from features.products import handlers as product_handlers
 from features.training import training
 from features.creative import art_creator
 from features.general import bonus_builder
+# CORREÇÃO: A importação de 'prospect_list' foi implicitamente removida ao não ser mais usada.
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +23,6 @@ logger = logging.getLogger(__name__)
 async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Roteador principal para todas as queries de callback não capturadas em main.py.
-
-    Este handler inspeciona o prefixo do `callback_data` e delega a execução
-    para o handler de callback unificado do módulo correspondente.
-    Esta abordagem é mais robusta e fácil de manter do que um grande dicionário de rotas.
     """
     query = update.callback_query
     if not query or not query.data:
@@ -36,11 +31,7 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     data = query.data
     logger.info(f"Callback roteado: '{data}' do usuário {query.from_user.id}")
 
-    # --- Lógica de Roteamento Aprimorada ---
-    # Cada módulo que aprimoramos agora tem seu próprio handler, que é chamado aqui.
-    # A responsabilidade de responder ao query (`query.answer()`) fica a cargo do handler final.
-
-    if data.startswith(('brochure_', 'folheteria_')): # Mantendo compatibilidade com prefixos antigos se necessário
+    if data.startswith(('brochure_', 'folheteria_')):
         await brochures.brochures_callback_handler(update, context)
     elif data.startswith('factory_'):
         await factory.factory_callback_handler(update, context)
@@ -58,9 +49,9 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await tables.tables_callback_handler(update, context)
     elif data.startswith('tfactors_'):
         await transfer_factors.transfer_factors_callback_handler(update, context)
+    # CORREÇÃO: A rota para 'editar_prospecto_' foi removida daqui.
 
     # --- Roteamento para Módulos Não Refatorados (Mantendo Lógica Original) ---
-    # Para os módulos que não aprimoramos juntos, mantemos uma lógica similar à sua original.
     elif data.startswith('beneficio') or data.startswith('produtos_individuais') or data == 'voltar_produtos':
         await product_handlers.callback_beneficios_handler(update, context)
     elif data.startswith('bonusconstrutor_'):

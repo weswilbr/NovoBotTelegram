@@ -14,7 +14,6 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
     CallbackQueryHandler,
-    ConversationHandler,
     filters,
 )
 
@@ -35,7 +34,8 @@ from features.creative import art_creator
 from features.general import start, help, bonus_builder
 from features.products import handlers as product_handlers
 from features.training import training
-from features.user_tools import prospect_list, store_finder
+# CORREÇÃO: 'prospect_list' foi removido da importação abaixo
+from features.user_tools import store_finder
 
 # --- Módulos de Utilitários (Utils) ---
 from utils.error_handler import error_handler
@@ -63,7 +63,7 @@ def register_command_handlers(app: Application) -> None:
         "produtos": product_handlers.beneficiosprodutos,
         "bonusconstrutor": bonus_builder.bonus_construtor,
         "marketingrede": marketing.marketing_rede,
-        "recompensas": rewards.mostrar_recompensas, # ATUALIZADO AQUI
+        "recompensas": rewards.mostrar_recompensas,
         "apresentacao": opportunity.apresentacaooportunidade,
         "fatorestransferencia": transfer_factors.fatorestransferencia,
         "fabrica4life": factory.fabrica4life,
@@ -80,10 +80,7 @@ def register_command_handlers(app: Application) -> None:
         # Criativo e Treinamento
         "artes": art_creator.artes,
         "treinamento": training.treinamento,
-        # Prospectos
-        "listarprospectos": prospect_list.listar_prospectos,
-        "relatorio": prospect_list.gerar_relatorio_comando,
-        "pdf": prospect_list.enviar_pdf,
+        # CORREÇÃO: Comandos de prospectos foram removidos
         # Admin
         "listaradmins": admin_commands.listar_admins,
         "silenciar": admin_commands.silenciar,
@@ -101,30 +98,7 @@ def register_command_handlers(app: Application) -> None:
 
     app.add_handler(store_finder.loja_handler)
 
-
-def register_conversation_handlers(app: Application) -> None:
-    """Registra todos os ConversationHandlers."""
-    prospect_add_conv = ConversationHandler(
-        entry_points=[CommandHandler("addprospecto", prospect_list.adicionar_prospecto_conversa)],
-        states={
-            prospect_list.NOME: [MessageHandler(filters.TEXT & ~filters.COMMAND, prospect_list.capturar_nome)],
-            prospect_list.TELEFONE: [MessageHandler(filters.TEXT & ~filters.COMMAND, prospect_list.capturar_telefone)],
-            prospect_list.CIDADE: [MessageHandler(filters.TEXT & ~filters.COMMAND, prospect_list.capturar_cidade)],
-        },
-        fallbacks=[CommandHandler("cancelar", prospect_list.cancelar_conversa)],
-    )
-    prospect_edit_conv = ConversationHandler(
-        entry_points=[CallbackQueryHandler(prospect_list.editar_prospecto, pattern='^editar_')],
-        states={
-            prospect_list.EDITAR_NOME: [MessageHandler(filters.TEXT & ~filters.COMMAND, prospect_list.capturar_nome_edicao)],
-            prospect_list.EDITAR_TELEFONE: [MessageHandler(filters.TEXT & ~filters.COMMAND, prospect_list.capturar_telefone_edicao)],
-            prospect_list.EDITAR_CIDADE: [MessageHandler(filters.TEXT & ~filters.COMMAND, prospect_list.capturar_cidade_edicao)],
-        },
-        fallbacks=[CommandHandler("cancelar", prospect_list.cancelar_conversa)],
-    )
-    app.add_handler(prospect_add_conv)
-    app.add_handler(prospect_edit_conv)
-
+# CORREÇÃO: A função 'register_conversation_handlers' foi removida.
 
 def register_callback_handlers(app: Application) -> None:
     """Registra todos os CallbackQueryHandlers. A ordem importa!"""
@@ -137,8 +111,8 @@ def register_callback_handlers(app: Application) -> None:
     app.add_handler(CallbackQueryHandler(opportunity.opportunity_callback_handler, pattern='^opportunity_'))
     app.add_handler(CallbackQueryHandler(planning.planning_callback_handler, pattern='^planning_'))
     app.add_handler(CallbackQueryHandler(ranking.ranking_details_callback_handler, pattern='^ranking_details_'))
-    app.add_handler(CallbackQueryHandler(tables.tables_callback_handler, pattern='^tables_')) # ATUALIZADO AQUI
-    app.add_handler(CallbackQueryHandler(transfer_factors.transfer_factors_callback_handler, pattern='^tfactors_')) # ATUALIZADO AQUI
+    app.add_handler(CallbackQueryHandler(tables.tables_callback_handler, pattern='^tables_'))
+    app.add_handler(CallbackQueryHandler(transfer_factors.transfer_factors_callback_handler, pattern='^tfactors_'))
     
     # O roteador genérico deve ser o último.
     app.add_handler(CallbackQueryHandler(callback_router))
@@ -173,7 +147,7 @@ def main() -> None:
     application.bot_data['usage_tracker'] = UsageTracker()
 
     register_command_handlers(application)
-    register_conversation_handlers(application)
+    # CORREÇÃO: A chamada para register_conversation_handlers foi removida.
     register_callback_handlers(application)
     register_message_handlers(application)
     register_utility_handlers(application)
