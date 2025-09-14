@@ -35,7 +35,10 @@ from utils.monitoring import commands as monitoring_commands
 from utils.monitoring.tracker import UsageTracker
 
 # --- Configuração do Logging ---
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 logger = logging.getLogger(__name__)
 
 # --- Inicialização da Aplicação do Bot (Escopo Global) ---
@@ -44,44 +47,83 @@ if not BOT_TOKEN:
 
 ptb_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-# Registra todos os handlers
-ptb_app.bot_data['usage_tracker'] = Tracker()
+# Adiciona o tracker de uso
+ptb_app.bot_data['usage_tracker'] = UsageTracker()
+
+# --- Registro de Handlers ---
 def register_command_handlers(app: Application) -> None:
     command_handlers = {
-        "start": start.start, "ajuda": help.ajuda, "produtos": product_handlers.beneficiosprodutos,
-        "bonusconstrutor": bonus_builder.bonus_construtor, "marketingrede": marketing.marketing_rede,
-        "recompensas": rewards.mostrar_recompensas, "apresentacao": opportunity.apresentacaooportunidade,
-        "fatorestransferencia": transfer_factors.fatorestransferencia, "fabrica4life": factory.fabrica4life,
-        "folheteria": brochures.folheteria, "glossario": glossary.glossario,
-        "tabelas": tables.tabelas_menu, "planificacao": planning.enviar_planificacao,
-        "ranking": ranking.mostrar_ranking, "regras": rules.mostrar_regras,
-        "convite": invites.mostrar_convites, "canais": channels.canais,
-        "fidelidade": loyalty.fidelidade, "artes": art_creator.artes,
-        "treinamento": training.treinamento, "listaradmins": admin_commands.listar_admins,
-        "silenciar": admin_commands.silenciar, "banir": admin_commands.banir,
-        "desbanir": admin_commands.desbanir, "fixar": admin_commands.fixar,
-        "desfixar": admin_commands.desfixar, "enviartextocanal": admin_commands.enviartextocanal,
-        "topusers": monitoring_commands.send_top_users_command, "resetusage": monitoring_commands.reset_usage_data_command,
+        "start": start.start,
+        "ajuda": help.ajuda,
+        "produtos": product_handlers.beneficiosprodutos,
+        "bonusconstrutor": bonus_builder.bonus_construtor,
+        "marketingrede": marketing.marketing_rede,
+        "recompensas": rewards.mostrar_recompensas,
+        "apresentacao": opportunity.apresentacaooportunidade,
+        "fatorestransferencia": transfer_factors.fatorestransferencia,
+        "fabrica4life": factory.fabrica4life,
+        "folheteria": brochures.folheteria,
+        "glossario": glossary.glossario,
+        "tabelas": tables.tabelas_menu,
+        "planificacao": planning.enviar_planificacao,
+        "ranking": ranking.mostrar_ranking,
+        "regras": rules.mostrar_regras,
+        "convite": invites.mostrar_convites,
+        "canais": channels.canais,
+        "fidelidade": loyalty.fidelidade,
+        "artes": art_creator.artes,
+        "treinamento": training.treinamento,
+        "listaradmins": admin_commands.listar_admins,
+        "silenciar": admin_commands.silenciar,
+        "banir": admin_commands.banir,
+        "desbanir": admin_commands.desbanir,
+        "fixar": admin_commands.fixar,
+        "desfixar": admin_commands.desfixar,
+        "enviartextocanal": admin_commands.enviartextocanal,
+        "topusers": monitoring_commands.send_top_users_command,
+        "resetusage": monitoring_commands.reset_usage_data_command,
     }
-    for command, handler in command_handlers.items(): app.add_handler(CommandHandler(command, handler))
+    for command, handler in command_handlers.items():
+        app.add_handler(CommandHandler(command, handler))
     app.add_handler(store_finder.loja_handler)
 
 def register_callback_handlers(app: Application) -> None:
-    app.add_handler(CallbackQueryHandler(welcome.welcome_callbacks_handler, pattern=f'^({welcome.CALLBACK_REGRAS}|{welcome.CALLBACK_INICIO}|{welcome.CALLBACK_MENU}|ajuda_.*)$'))
-    app.add_handler(CallbackQueryHandler(welcome.handle_verification_callback, pattern=f'^{welcome.VERIFY_MEMBER_CALLBACK}$'))
+    app.add_handler(
+        CallbackQueryHandler(
+            welcome.welcome_callbacks_handler,
+            pattern=f'^({welcome.CALLBACK_REGRAS}|{welcome.CALLBACK_INICIO}|{welcome.CALLBACK_MENU}|ajuda_.*)$'
+        )
+    )
+    app.add_handler(
+        CallbackQueryHandler(
+            welcome.handle_verification_callback,
+            pattern=f'^{welcome.VERIFY_MEMBER_CALLBACK}$'
+        )
+    )
     app.add_handler(CallbackQueryHandler(callback_router))
 
 def register_message_handlers(app: Application) -> None:
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome.darboasvindas_handler))
     if CANAL_ID_2:
-        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & filters.Chat(chat_id=int(CANAL_ID_2)), welcome.handle_unverified_text_message))
-    app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE & ~filters.COMMAND, private_messaging.handle_private_message))
+        app.add_handler(
+            MessageHandler(
+                filters.TEXT & ~filters.COMMAND & filters.Chat(chat_id=int(CANAL_ID_2)),
+                welcome.handle_unverified_text_message
+            )
+        )
+    app.add_handler(
+        MessageHandler(
+            filters.TEXT & filters.ChatType.PRIVATE & ~filters.COMMAND,
+            private_messaging.handle_private_message
+        )
+    )
 
 def register_utility_handlers(app: Application) -> None:
     app.add_handler(get_file_id_handler())
     app.add_handler(setup_group_id_handler())
     app.add_error_handler(error_handler)
 
+# Registra todos os handlers
 register_command_handlers(ptb_app)
 register_callback_handlers(ptb_app)
 register_message_handlers(ptb_app)
