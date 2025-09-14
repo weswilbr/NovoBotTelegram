@@ -1,11 +1,34 @@
 # NOME DO ARQUIVO: requirements.txt
-# REFACTOR: Lista as dependências do projeto para garantir um ambiente de execução consistente.
+# REFACTOR: Versão final com todas as dependências necessárias para a Vercel.
+
+# --- Frameworks e Servidor Web ---
+
+# Framework para criar a API web (webhook) que recebe as mensagens do Telegram
+fastapi
+
+# Servidor ASGI necessário para rodar o FastAPI
+uvicorn
+
+
+# --- Biblioteca do Bot ---
 
 # Biblioteca principal para interagir com a API do Telegram e para agendamento de tarefas (jobs)
 python-telegram-bot[job-queue]==21.9
 
+# Cliente HTTP usado pelo python-telegram-bot para fazer as requisições
+httpx
+
+
+# --- Banco de Dados e Armazenamento ---
+
+# Cliente para conectar ao Vercel KV (Redis), usado pelo UsageTracker
+redis
+
 # Adaptador para o banco de dados PostgreSQL (versão binária, mais fácil de instalar)
 psycopg2-binary
+
+
+# --- Utilitários e Módulos de Features ---
 
 # Biblioteca para a criação e manipulação de arquivos PDF (usada nos relatórios)
 fpdf2
@@ -13,5 +36,5 @@ fpdf2
 # Biblioteca para processamento de imagens (provavelmente usada na criação de artes)
 Pillow
 
-# Carrega variáveis de ambiente de um arquivo .env para a aplicação
+# Carrega variáveis de ambiente de um arquivo .env para desenvolvimento local
 python-dotenv==1.0.0
