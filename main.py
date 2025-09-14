@@ -1,10 +1,9 @@
 # NOME DO ARQUIVO: main.py
-# REFACTOR: Versão final otimizada para Vercel com Flask e asyncio.
+# REFACTOR: Versão final com FastAPI e Uvicorn para deploy ASGI na Vercel.
 
 import logging
 import asyncio
-import json
-from flask import Flask, request
+from fastapi import FastAPI, Request, Response
 from telegram import Update
 from telegram.ext import (
     Application, ApplicationBuilder, ContextTypes,
@@ -40,16 +39,13 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # --- Inicialização da Aplicação do Bot (Escopo Global) ---
-# A aplicação é construída APENAS UMA VEZ quando a função serverless "acorda".
-# Isso é muito mais eficiente do que reconstruí-la a cada mensagem.
 if not BOT_TOKEN:
     raise ValueError("CRÍTICO: BOT_TOKEN não foi encontrado.")
 
 ptb_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 # Registra todos os handlers
-ptb_app.bot_data['usage_tracker'] = UsageTracker()
-
+ptb_app.bot_data['usage_tracker'] = Tracker()
 def register_command_handlers(app: Application) -> None:
     command_handlers = {
         "start": start.start, "ajuda": help.ajuda, "produtos": product_handlers.beneficiosprodutos,
@@ -91,25 +87,13 @@ register_callback_handlers(ptb_app)
 register_message_handlers(ptb_app)
 register_utility_handlers(ptb_app)
 
-# Cria um loop de eventos asyncio que pode ser reutilizado entre as chamadas
-loop = asyncio.get_event_loop()
+# --- Servidor FastAPI (ASGI) para a Vercel ---
+app = FastAPI()
 
-# --- Servidor Flask para a Vercel ---
-app = Flask(__name__)
-
-@app.route('/', methods=['POST'])
-def webhook() -> tuple[str, int]:
-    """Função que a Vercel chama. Ela recebe o update do Telegram e o processa."""
-    try:
-        data = request.get_json(force=True)
-        update = Update.de_json(data, ptb_app.bot)
-        
-        # Executa a função assíncrona do bot no loop de eventos existente.
-        # Isso é mais eficiente do que criar um novo loop para cada mensagem.
-        loop.run_until_complete(ptb_app.process_update(update))
-        
-        return 'OK', 200
-    except Exception as e:
-        logger.error(f"Erro no webhook: {e}", exc_info=True)
-        # Retorna uma tupla (resposta, código de status)
-        return 'Internal Server Error', 500
+@app.post("/")
+async def webhook(request: Request) -> Response:
+    """Recebe o update do Telegram e o processa."""
+    data = await request.json()
+    update = Update.de_json(data, ptb_app.bot)
+    await ptb_app.process_update(update)
+    return Response(status_code=200)
