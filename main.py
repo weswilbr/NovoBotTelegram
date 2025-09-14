@@ -1,20 +1,13 @@
 # NOME DO ARQUIVO: main.py
-# REFACTOR: Ponto de entrada principal do bot, responsável por inicializar e registrar todos os handlers.
+# REFACTOR: Versão final e completa, com todos os handlers registrados.
 
-# --- Importações Padrão ---
 import logging
 import sys
 import locale
-
-# --- Importações do Telegram ---
 from telegram import Update
 from telegram.ext import (
-    Application,
-    ApplicationBuilder,
-    CommandHandler,
-    MessageHandler,
-    CallbackQueryHandler,
-    filters,
+    Application, ApplicationBuilder, CommandHandler, MessageHandler,
+    CallbackQueryHandler, filters
 )
 
 # --- Módulos de Configuração e Core ---
@@ -34,7 +27,6 @@ from features.creative import art_creator
 from features.general import start, help, bonus_builder
 from features.products import handlers as product_handlers
 from features.training import training
-# CORREÇÃO: 'prospect_list' foi removido da importação abaixo
 from features.user_tools import store_finder
 
 # --- Módulos de Utilitários (Utils) ---
@@ -46,10 +38,7 @@ from utils.monitoring.motivation import enviar_motivacao_agendada
 from utils.monitoring.tracker import UsageTracker
 
 # --- Configuração do Logging ---
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -80,7 +69,6 @@ def register_command_handlers(app: Application) -> None:
         # Criativo e Treinamento
         "artes": art_creator.artes,
         "treinamento": training.treinamento,
-        # CORREÇÃO: Comandos de prospectos foram removidos
         # Admin
         "listaradmins": admin_commands.listar_admins,
         "silenciar": admin_commands.silenciar,
@@ -95,26 +83,17 @@ def register_command_handlers(app: Application) -> None:
     }
     for command, handler in command_handlers.items():
         app.add_handler(CommandHandler(command, handler))
-
     app.add_handler(store_finder.loja_handler)
 
-# CORREÇÃO: A função 'register_conversation_handlers' foi removida.
 
 def register_callback_handlers(app: Application) -> None:
-    """Registra todos os CallbackQueryHandlers. A ordem importa!"""
+    """Registra os CallbackQueryHandlers. A ordem importa!"""
+    # Handlers específicos (como o de boas-vindas) que precisam de prioridade vêm primeiro.
     app.add_handler(CallbackQueryHandler(welcome.welcome_callbacks_handler, pattern=f'^({welcome.CALLBACK_REGRAS}|{welcome.CALLBACK_INICIO}|{welcome.CALLBACK_MENU}|ajuda_.*)$'))
     app.add_handler(CallbackQueryHandler(welcome.handle_verification_callback, pattern=f'^{welcome.VERIFY_MEMBER_CALLBACK}$'))
-    app.add_handler(CallbackQueryHandler(brochures.brochures_callback_handler, pattern='^brochure_'))
-    app.add_handler(CallbackQueryHandler(factory.factory_callback_handler, pattern='^factory_'))
-    app.add_handler(CallbackQueryHandler(glossary.glossary_callback_handler, pattern='^glossary_'))
-    app.add_handler(CallbackQueryHandler(marketing.marketing_callback_handler, pattern='^marketing_'))
-    app.add_handler(CallbackQueryHandler(opportunity.opportunity_callback_handler, pattern='^opportunity_'))
-    app.add_handler(CallbackQueryHandler(planning.planning_callback_handler, pattern='^planning_'))
-    app.add_handler(CallbackQueryHandler(ranking.ranking_details_callback_handler, pattern='^ranking_details_'))
-    app.add_handler(CallbackQueryHandler(tables.tables_callback_handler, pattern='^tables_'))
-    app.add_handler(CallbackQueryHandler(transfer_factors.transfer_factors_callback_handler, pattern='^tfactors_'))
     
-    # O roteador genérico deve ser o último.
+    # O roteador genérico 'callback_router' lida com todos os outros callbacks (products_, bbuilder_, etc.)
+    # Esta é a forma mais limpa e de fácil manutenção.
     app.add_handler(CallbackQueryHandler(callback_router))
 
 
@@ -128,7 +107,7 @@ def register_message_handlers(app: Application) -> None:
 
 def register_utility_handlers(app: Application) -> None:
     """Registra handlers de utilidade e o error handler."""
-    app.add_handler(get_file_id_handler())
+    app.add_handler(get_file_id_handler()) # Adiciona o handler do comando /getfileid
     app.add_handler(setup_group_id_handler())
     app.add_error_handler(error_handler)
 
@@ -147,7 +126,6 @@ def main() -> None:
     application.bot_data['usage_tracker'] = UsageTracker()
 
     register_command_handlers(application)
-    # CORREÇÃO: A chamada para register_conversation_handlers foi removida.
     register_callback_handlers(application)
     register_message_handlers(application)
     register_utility_handlers(application)

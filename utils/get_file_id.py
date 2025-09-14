@@ -1,53 +1,65 @@
 # NOME DO ARQUIVO: utils/get_file_id.py
-# REFACTOR: Handler para administradores obterem o file_id de mídias.
+# FUNCIONALIDADE: Fornece um comando de desenvolvedor para obter o file_id de qualquer mídia.
+
 import logging
-from telegram import Update, ChatMember
-from telegram.ext import ContextTypes, MessageHandler, filters
-from telegram.constants import ParseMode
-from telegram.helpers import escape_markdown
-from config import ADMIN_USER_IDS
+from telegram import Update
+from telegram.ext import ContextTypes, CommandHandler, filters
 
 logger = logging.getLogger(__name__)
 
 async def get_file_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Captura e retorna o file_id de mídias enviadas por admins."""
-    if not (update.message and update.effective_user and update.effective_chat): return
-    
-    user = update.effective_user
-    chat = update.effective_chat
-    
-    # Autorização: admin global ou criador do grupo
-    is_authorized = user.id in ADMIN_USER_IDS
-    if not is_authorized and chat.type != 'private':
-        try:
-            member = await context.bot.get_chat_member(chat.id, user.id)
-            if member.status == ChatMember.OWNER:
-                is_authorized = True
-        except Exception as e:
-            logger.error(f"Não foi possível verificar se {user.id} é criador do chat {chat.id}: {e}")
+    """
+    Responde a uma mensagem com o file_id da mídia à qual o comando está respondendo.
+    Este é um comando de utilidade para o administrador do bot.
+    """
+    if not update.message or not update.message.reply_to_message:
+        await update.message.reply_text(
+            "⚠️ *Como usar:*\n"
+            "1. Envie uma foto, vídeo, documento ou sticker.\n"
+            "2. Responda a essa mídia com o comando `/getfileid`.",
+            parse_mode='Markdown'
+        )
+        return
 
-    if not is_authorized: return
+    replied_message = update.message.reply_to_message
+    file_id = None
+    media_type = "desconhecida"
 
-    media_map = {
-        'photo': ('🖼️ Foto', update.message.photo[-1]),
-        'video': ('🎥 Vídeo', update.message.video),
-        'document': ('📄 Documento', update.message.document),
-        'audio': ('🎵 Áudio', update.message.audio),
-        'animation': ('🎞️ Animação', update.message.animation),
-        'sticker': ('🌟 Sticker', update.message.sticker),
-    }
+    if replied_message.photo:
+        # Pega a foto de maior resolução
+        file_id = replied_message.photo[-1].file_id
+        media_type = "Foto"
+    elif replied_message.video:
+        file_id = replied_message.video.file_id
+        media_type = "Vídeo"
+    elif replied_message.document:
+        file_id = replied_message.document.file_id
+        media_type = "Documento"
+    elif replied_message.audio:
+        file_id = replied_message.audio.file_id
+        media_type = "Áudio"
+    elif replied_message.sticker:
+        file_id = replied_message.sticker.file_id
+        media_type = "Sticker"
+    elif replied_message.animation:
+        file_id = replied_message.animation.file_id
+        media_type = "Animação (GIF)"
+        
+    if file_id:
+        logger.info(f"File ID para {media_type} obtido por {update.effective_user.id}: {file_id}")
+        await update.message.reply_text(
+            f"✅ *File ID da Mídia ({media_type}):*\n\n"
+            f"`{file_id}`\n\n"
+            "Copie este código e cole no seu arquivo `data.py`.",
+            parse_mode='Markdown'
+        )
+    else:
+        await update.message.reply_text("⚠️ Nenhuma mídia encontrada na mensagem respondida.")
 
-    for key, (emoji, media_obj) in media_map.items():
-        if hasattr(update.message, key) and media_obj:
-            file_id = media_obj.file_id
-            unique_id = media_obj.file_unique_id
-            text = (f"{emoji} ID: `{escape_markdown(file_id, version=2)}`\n"
-                    f"🔒 ID Único: `{escape_markdown(unique_id, version=2)}`")
-            await update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN_V2)
-            break
-
-def get_file_id_handler() -> MessageHandler:
-    """Retorna um MessageHandler configurado para capturar file IDs."""
-    media_filters = (filters.PHOTO | filters.VIDEO | filters.AUDIO | filters.Document.ALL | filters.ANIMATION | filters.Sticker.ALL)
-    return MessageHandler(media_filters, get_file_id)
-
+def get_file_id_handler() -> CommandHandler:
+    """
+    Cria e retorna o CommandHandler para o comando /getfileid.
+    O filtro garante que este comando só funcione em conversas privadas com o bot,
+    para não poluir os grupos.
+    """
+    return CommandHandler("getfileid", get_file_id, filters=filters.ChatType.PRIVATE)
