@@ -1,6 +1,8 @@
-# Força a instalação da versão estável mais recente da biblioteca do Telegram
-python-telegram-bot==21.1.1
+# NOME DO ARQUIVO: requirements.txt
 
-# Bibliotecas opcionais, mas recomendadas
-python-dotenv
-fpdf
+python-telegram-bot[job-queue]==21.9
+psycopg2-binary
+fpdf2
+Pillow
+python-dotenv==1.0.0
+Flask==3.0.0 
