@@ -1,11 +1,10 @@
 # NOME DO ARQUIVO: features/general/help_command.py
-# REFACTOR: Menu de ajuda final, sem menções a prospectos ou outras funcionalidades removidas.
+# REFACTOR: Comando /recompensas2024 atualizado para /recompensas no menu de ajuda.
 
 from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.constants import ChatType, ParseMode
 
-# Importa o decorador REAL que criamos
 from utils.decorators import group_member_required
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -30,7 +29,8 @@ async def ajuda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "Explore as diversas funcionalidades do bot!\n\n"
         "🚀 *Negócios & Treinamentos:*\n"
         "   • /marketingrede - Saiba mais sobre Marketing de Rede\n"
-        "   • /recompensas2024 - Conheça o Plano de Recompensas 2024\n"
+        # A LINHA ABAIXO FOI ALTERADA
+        "   • /recompensas - Conheça o Plano de Recompensas\n"
         "   • /bonusconstrutor - Entenda o Bônus Construtor\n\n"
         "💰 *Produtos & Benefícios:*\n"
         "   • /glossario - Consulte termos e conceitos\n"
