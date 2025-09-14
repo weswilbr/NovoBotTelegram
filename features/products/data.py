@@ -56,7 +56,8 @@ MEDIA = {
             'documento': 'BQACAgEAAxkBAAMxZt4kyxybDpyStV695_x9BqHi-gUAAp0DAAJbOfFGNpvdNZiPoXc2BA',
             'social_kit': {
                 'story_image': 'PLACEHOLDER_STORY_IMAGE_RIOVIDABURST',
-                'carousel_images': ['PLACEHOLDER_CAROUSEL1_RIOVIDABURST', 'PLACEHOLDER_CAROUSEL2_RIOVIDABURST'],
+                'feed_image': 'PLACEHOLDER_FEED_IMAGE_RIOVIDABURST',
+                'reels_video': 'PLACEHOLDER_REELS_VIDEO_RIOVIDABURST',
                 'copy_text': "🍇 Energia e imunidade em um só lugar! 🍇\n\nCom o RioVida Burst, você tem o poder dos antioxidantes e dos Fatores de Transferência na palma da sua mão. Perfeito para a correria do dia a dia!\n\n✅ Fortalece o sistema imunológico\n✅ Aumenta a energia e a disposição\n✅ Sabor delicioso de açaí e blueberry\n\nQuer sentir essa explosão de bem-estar? Fale comigo e peça já o seu! 🚀",
                 'hashtags': "#4LifeBrasil #RioVidaBurst #FatoresDeTransferencia #Saude #ImunidadeEmAlta #Antioxidantes #VidaSaudavel"
             }
@@ -68,7 +69,8 @@ MEDIA = {
             'documento': 'BQACAgEAAx0CfAGLsgACCPRm9B5_NQTLMkliTyY38WGKPbzWPgACfwQAAqQtoUdHteDxrzz-jDYE',
             'social_kit': {
                 'story_image': 'PLACEHOLDER_STORY_IMAGE_RIOVIDASTIX',
-                'carousel_images': ['PLACEHOLDER_CAROUSEL1_RIOVIDASTIX', 'PLACEHOLDER_CAROUSEL2_RIOVIDASTIX'],
+                'feed_image': 'PLACEHOLDER_FEED_IMAGE_RIOVIDASTIX',
+                'reels_video': 'PLACEHOLDER_REELS_VIDEO_RIOVIDASTIX',
                 'copy_text': "💦 Transforme sua água, transforme sua saúde! 💦\n\nRioVida Stix é a forma mais prática e deliciosa de fortalecer sua imunidade e se manter hidratado ao longo do dia. Basta misturar na água e pronto!\n\n✅ Suporte ao sistema imunológico\n✅ Rico em antioxidantes\n✅ Prático para levar a qualquer lugar\n\nPronto para dar um upgrade na sua hidratação? Fale comigo! ✨",
                 'hashtags': "#RioVidaStix #4Life #Hidratacao #Imunidade #BemEstar #Antioxidante #SaudeEmPo"
             }
@@ -80,7 +82,8 @@ MEDIA = {
             'documento': 'BQACAgEAAxkBAAJDmWfY5EKUqzRUd93IGl95fZiZCK8jAAIwBAAC55rIRot5b1n-bCGKNgQ',
             'social_kit': {
                 'story_image': 'PLACEHOLDER_STORY_IMAGE_BIOEFA',
-                'carousel_images': ['PLACEHOLDER_CAROUSEL1_BIOEFA', 'PLACEHOLDER_CAROUSEL2_BIOEFA'],
+                'feed_image': 'PLACEHOLDER_FEED_IMAGE_BIOEFA',
+                'reels_video': 'PLACEHOLDER_REELS_VIDEO_BIOEFA',
                 'copy_text': "🧠❤️ Cuide do seu corpo de dentro para fora com BioEFA! 🌿\n\nEssenciais para o coração, cérebro e bem-estar geral, os ácidos graxos ômega-3 e ômega-6 são a base para uma vida saudável. BioEFA combina óleos de peixe e sementes da mais alta qualidade.\n\n✅ Suporte à saúde cardiovascular\n✅ Promove a função cerebral saudável\n✅ Ajuda a manter a pele radiante\n\nInvista no seu bem-estar completo. Vamos conversar! 💬",
                 'hashtags': "#BioEFA #Omega3 #SaudeDoCoracao #4LifeBrasil #Nutricao #PeleSaudavel #CerebroAtivo"
             }
@@ -92,7 +95,8 @@ MEDIA = {
             'documento': 'BQACAgEAAxkBAAMzZt4lSZsZzqZyVGKuz9eUKr7Vq2EAAp4DAAJbOfFG8zorKuHMfh82BA',
             'social_kit': {
                 'story_image': 'PLACEHOLDER_STORY_IMAGE_ENERGY',
-                'carousel_images': ['PLACEHOLDER_CAROUSEL1_ENERGY', 'PLACEHOLDER_CAROUSEL2_ENERGY'],
+                'feed_image': 'PLACEHOLDER_FEED_IMAGE_ENERGY',
+                'reels_video': 'PLACEHOLDER_REELS_VIDEO_ENERGY',
                 'copy_text': "⚡ Dê um basta no cansaço e acenda sua energia com Energy Go Stix! ⚡\n\nPrecisa de um impulso para o trabalho, estudos ou treino? Energy Go Stix combina Fatores de Transferência com ingredientes naturais para dar foco e vitalidade ao seu dia.\n\n✅ Aumenta a energia e o desempenho\n✅ Melhora o foco e a concentração\n✅ Delicioso sabor de frutas vermelhas\n\nTransforme seu dia! Me chame para saber como. 🔥",
                 'hashtags': "#EnergyGoStix #MaisEnergia #FocoTotal #4Life #SemCansaco #Performance #VidaAtiva"
             }
@@ -103,8 +107,9 @@ MEDIA = {
             'video': 'BAACAgEAAxkBAAICtmboFTTgNOCnGllv5Ff-5-914JOHAAIGCgACz0RJR8say1htm3VaNgQ',
             'documento': 'BQACAgEAAxkBAAICu2boFqVza6DHajduav8Bt9BewjnkAAIICgACz0RJR4CWyGtgxbNuNgQ',
             'social_kit': {
-                'story_image': 'PLACEHOLDER_STORY_IMAGE_TFPLUS',
-                'carousel_images': ['PLACEHOLDER_CAROUSEL1_TFPLUS', 'PLACEHOLDER_CAROUSEL2_TFPLUS'],
+                'story_image': 'AgACAgEAAxkBAAIB1WjGL1pYKU9CqvRwedxhW6v-n_aWAAKAtzEbwFI4RmspPKiDU1qtAQADAgADeQADNgQ',
+                'feed_image': 'PLACEHOLDER_FEED_IMAGE_TFPLUS',
+                'reels_video': 'PLACEHOLDER_REELS_VIDEO_TFPLUS',
                 'copy_text': "🛡️ Blinde sua imunidade com a fórmula mais avançada: TF Plus! 🛡️\n\nConsiderado o topo de linha do suporte ao sistema imunológico, o TF Plus combina a inteligência dos Fatores de Transferência com um blend exclusivo de ingredientes para uma defesa robusta.\n\n✅ O mais alto nível de suporte imunológico\n✅ Educa e equilibra as células de defesa\n✅ Promove saúde e bem-estar geral\n\nProteja quem você ama. Fale comigo e fortaleça sua saúde! 💪",
                 'hashtags': "#TFPlus #Imunidade #SistemaImunologico #4Life #FatoresDeTransferencia #SaudeBlindada #BemEstar"
             }
@@ -112,11 +117,12 @@ MEDIA = {
         'tfplus30caps': {
             'label': "💊 TF Plus (30 Cápsulas)",
             'foto': 'AgACAgEAAyEFAASNSVRUAAIE5mgybu_TgvyRS614CG0vhPSEbw11AAIHrjEbtX-RRT-pYabHSFYlAQADAgADeQADNgQ',
-            'video': 'BAACAgEAAxkBAAJPOWgyb0ZEEzLBgCZqfAm265l6Xxh0AALZBAACp3-QRWgz7-MrCY0NNgQ',
+            'video': 'BAACAgEAAxkBAAIB0mjGLgoWgELYYwzo6ojAQHNRJSaKAALhBQACwFI4Rkl4PHUfOWYAATYE',
             'documento': None,
             'social_kit': {
                 'story_image': 'PLACEHOLDER_STORY_IMAGE_TFPLUS30',
-                'carousel_images': ['PLACEHOLDER_CAROUSEL1_TFPLUS30'],
+                'feed_image': 'PLACEHOLDER_FEED_IMAGE_TFPLUS30',
+                'reels_video': 'PLACEHOLDER_REELS_VIDEO_TFPLUS30',
                 'copy_text': "💊 Praticidade e potência para sua imunidade! 💊\n\nA fórmula completa do TF Plus, agora em uma embalagem compacta de 30 cápsulas. Perfeita para viagens ou para quem quer experimentar o poder do nosso suporte imunológico mais vendido.\n\n✅ Mesma fórmula, mais conveniência\n✅ Ideal para levar na bolsa ou na mala\n✅ Suporte imunológico de elite onde você estiver\n\nLeve sua proteção com você. Peça já a versão de 30 cápsulas! ✈️",
                 'hashtags': "#TFPlus30 #Praticidade #ImunidadeParaViagem #4LifeBrasil #Suplementos"
             }
@@ -128,7 +134,8 @@ MEDIA = {
             'documento': 'BQACAgEAAxkBAAJD-WfaIbM6LYt8sjD-YhouWGpOsZrrAAL-AwACtxWgR04AAdqdDwaCXTYE',
             'social_kit': {
                 'story_image': 'PLACEHOLDER_STORY_IMAGE_TFZINCO',
-                'carousel_images': ['PLACEHOLDER_CAROUSEL1_TFZINCO', 'PLACEHOLDER_CAROUSEL2_TFZINCO'],
+                'feed_image': 'PLACEHOLDER_FEED_IMAGE_TFZINCO',
+                'reels_video': 'PLACEHOLDER_REELS_VIDEO_TFZINCO',
                 'copy_text': "💪 A dupla perfeita para sua imunidade: Fator de Transferência + Zinco! 💪\n\nTF Zinco combina a inteligência do Tri-Factor Formula com o poder do zinco, um mineral essencial para o funcionamento das células de defesa. Cuidado diário de forma prática e eficaz.\n\n✅ Suporte essencial ao sistema imunológico\n✅ Ação antioxidante\n✅ Ajuda na saúde da pele\n\nUm pequeno passo para uma grande proteção. Peça o seu! 🛡️",
                 'hashtags': "#TFZinco #Zinco #ImunidadeForte #4LifeBrasil #SaudeDiaria #Protecao"
             }
@@ -140,7 +147,8 @@ MEDIA = {
             'documento': 'BQACAgEAAxkBAAIDhWbpZ0BRUjZluUdXfzEZ0L4hV-vyAALLBAACNzRIR22E4cGkGvHoNgQ',
             'social_kit': {
                 'story_image': 'PLACEHOLDER_STORY_IMAGE_NUTRASTART',
-                'carousel_images': ['PLACEHOLDER_CAROUSEL1_NUTRASTART', 'PLACEHOLDER_CAROUSEL2_NUTRASTART'],
+                'feed_image': 'PLACEHOLDER_FEED_IMAGE_NUTRASTART',
+                'reels_video': 'PLACEHOLDER_REELS_VIDEO_NUTRASTART',
                 'copy_text': "☀️ Comece seu dia da melhor forma com NutraStart! ☀️\n\nUma refeição completa, deliciosa e nutritiva em um copo. NutraStart é um shake que oferece proteínas, fibras, vitaminas e o suporte imunológico dos Fatores de Transferência. Perfeito para um café da manhã saudável ou para o controle de peso.\n\n✅ Nutrição balanceada\n✅ Apoio ao sistema imunológico\n✅ Sabor incrível de chocolate ou baunilha\n\nQuer um início de dia mais saudável e prático? Me chame! 🍫",
                 'hashtags': "#NutraStart #ShakeNutritivo #CafeDaManhaSaudavel #ControleDePeso #4Life #RefeicaoCompleta"
             }
@@ -152,7 +160,8 @@ MEDIA = {
             'documento': 'BQACAgEAAxkBAAIEtmb0dW3li1YSxQ51EDFbr6p_ReBRAAL7BAACtxWoR64zYiGCEo0NNgQ',
             'social_kit': {
                 'story_image': 'PLACEHOLDER_STORY_IMAGE_TFBOOST',
-                'carousel_images': ['PLACEHOLDER_CAROUSEL1_TFBOOST', 'PLACEHOLDER_CAROUSEL2_TFBOOST'],
+                'feed_image': 'PLACEHOLDER_FEED_IMAGE_TFBOOST',
+                'reels_video': 'PLACEHOLDER_REELS_VIDEO_TFBOOST',
                 'copy_text': "🍊 Dê um BOOM de energia e imunidade no seu dia com TF Boost! 🍊\n\nSinta a vitalidade com esta bebida refrescante que combina o poder dos Fatores de Transferência com fontes naturais de energia como guaraná e chá verde. Perfeito para aqueles dias que exigem mais de você!\n\n✅ Energia sustentada sem picos\n✅ Rico em Vitamina C\n✅ Fortalece o sistema de defesa\n\nPrecisa de um gás extra? Experimente o TF Boost! ✨",
                 'hashtags': "#TFBoost #EnergiaNatural #VitaminaC #Imunidade #4LifeBrasil #Foco #Vitalidade"
             }
@@ -164,7 +173,8 @@ MEDIA = {
             'documento': 'BQACAgEAAxkBAAI3GGdd-wbglUIZ6aUMduLIPS7V5qnvAAK0BAACpNXwRuDyEfOCCu_QNgQ',
             'social_kit': {
                 'story_image': 'PLACEHOLDER_STORY_IMAGE_PROTF',
-                'carousel_images': ['PLACEHOLDER_CAROUSEL1_PROTF', 'PLACEHOLDER_CAROUSEL2_PROTF'],
+                'feed_image': 'PLACEHOLDER_FEED_IMAGE_PROTF',
+                'reels_video': 'PLACEHOLDER_REELS_VIDEO_PROTF',
                 'copy_text': "🏋️‍♂️ Transforme seu corpo e seus resultados com PRO-TF! 🏋️‍♀️\n\nA proteína mais avançada do mercado, que não só ajuda a construir massa muscular magra, mas também estimula o metabolismo e fortalece o sistema imunológico.\n\n✅ Constrói e protege a massa muscular\n✅ Acelera a queima de gordura\n✅ Delicioso sabor de baunilha ou chocolate\n\nEleve seu treino e sua saúde a um novo patamar. Fale comigo! 💪",
                 'hashtags': "#PROTF #Proteina #MassaMuscular #QueimaDeGordura #Fitness #4LifeFit #Treino"
             }
@@ -176,7 +186,8 @@ MEDIA = {
             'documento': 'BQACAgEAAxkBAAI4nmdmtA60860qO0S8oVmgkXM5pO6sAALLBAACaqU5RwqVHw4I3chiNgQ',
             'social_kit': {
                 'story_image': 'PLACEHOLDER_STORY_IMAGE_COLLAGEN',
-                'carousel_images': ['PLACEHOLDER_CAROUSEL1_COLLAGEN', 'PLACEHOLDER_CAROUSEL2_COLLAGEN'],
+                'feed_image': 'PLACEHOLDER_FEED_IMAGE_COLLAGEN',
+                'reels_video': 'PLACEHOLDER_REELS_VIDEO_COLLAGEN',
                 'copy_text': "✨ Revele sua melhor versão com o Colágeno 4Life! ✨\n\nNossa fórmula exclusiva não cuida apenas da sua pele, mas também fortalece cabelos, unhas e articulações, tudo isso enquanto reforça seu sistema imunológico com Fatores de Transferência.\n\n✅ Melhora a elasticidade e hidratação da pele\n✅ Fortalece unhas e cabelos\n✅ Suporte para a saúde das articulações\n\nBeleza que vem de dentro para fora. Vamos conversar sobre seus benefícios! 💖",
                 'hashtags': "#Colageno4Life #PeleRadiante #CabelosFortes #ArticulacoesSaudaveis #BelezaDeDentroParaFora #4Life"
             }
@@ -188,7 +199,8 @@ MEDIA = {
             'documento': 'BQACAgEAAxkBAAIWkGcIfS4NVmA9kOU0cj7Fj6LKdv50AAICBQACTQpBRG2aA-lUC6N-NgQ',
             'social_kit': {
                 'story_image': 'PLACEHOLDER_STORY_IMAGE_GLUTAMINE',
-                'carousel_images': ['PLACEHOLDER_CAROUSEL1_GLUTAMINE', 'PLACEHOLDER_CAROUSEL2_GLUTAMINE'],
+                'feed_image': 'PLACEHOLDER_FEED_IMAGE_GLUTAMINE',
+                'reels_video': 'PLACEHOLDER_REELS_VIDEO_GLUTAMINE',
                 'copy_text': "🔬 Dê o combustível que suas células de defesa precisam com Glutamine Prime! 🔬\n\nA glutamina é um aminoácido vital para a recuperação e o bom funcionamento do sistema imunológico. Nossa fórmula é potencializada com NanoFactor® para uma comunicação celular mais eficiente.\n\n✅ Combustível para as células imunes\n✅ Auxilia na recuperação pós-exercício\n✅ Suporte nutricional avançado\n\nOtimize sua saúde a nível celular. Quer saber mais? Me chame! 👨‍🔬",
                 'hashtags': "#GlutaminePrime #Recuperacao #SaudeCelular #Imunidade #NanoFactor #4Life"
             }
@@ -200,7 +212,8 @@ MEDIA = {
             'documento': 'BQACAgEAAxkBAAI45WdoeZ-bTPJUtsn1s8RVUSLNkpv1AAIYBAAC80lIRxRRAwAB5DCZhjYE',
             'social_kit': {
                 'story_image': 'PLACEHOLDER_STORY_IMAGE_MASTIGAVEL',
-                'carousel_images': ['PLACEHOLDER_CAROUSEL1_MASTIGAVEL', 'PLACEHOLDER_CAROUSEL2_MASTIGAVEL'],
+                'feed_image': 'PLACEHOLDER_FEED_IMAGE_MASTIGAVEL',
+                'reels_video': 'PLACEHOLDER_REELS_VIDEO_MASTIGAVEL',
                 'copy_text': "🍊 Cuidar da imunidade das crianças (e dos adultos!) nunca foi tão gostoso! 🍊\n\nO TF Mastigável oferece o suporte inteligente do Tri-Factor Formula em um tablete com delicioso sabor cítrico. A forma divertida e eficaz de manter as defesas da família sempre em alta.\n\n✅ Suporte imunológico para todas as idades\n✅ Sabor que as crianças adoram\n✅ Prático e fácil de consumir\n\nProteção e sabor para quem você ama. Peça o seu! ❤️",
                 'hashtags': "#TFMastigavel #ImunidadeInfantil #SaudeDaFamilia #4LifeKids #FatoresDeTransferencia"
             }
@@ -414,4 +427,4 @@ Proteja a saúde dos seus filhos com estes tabletes mastigáveis que combinam Tr
 
 *TF Mastigável*: Proteção! 😄
 """
-}   
+}
