@@ -1,5 +1,5 @@
 # NOME DO ARQUIVO: main.py
-# REFACTOR: Versão final para Vercel, sem a funcionalidade de prospectos.
+# REFACTOR: Versão final para Vercel, com import corrigido para help_command.py.
 
 # --- Importações Padrão e de Terceiros ---
 import logging
@@ -22,14 +22,14 @@ from core.handlers import callback_router
 from features.admin.commands import (
     listar_admins, silenciar, banir, desbanir, fixar, desfixar, enviartextocanal
 )
+# IMPORT CORRIGIDO ABAIXO
+from features.general.help_command import start, ajuda
 from features.community.private_messaging import handle_private_message
 from features.community.welcome import (
     darboasvindas_handler, welcome_callbacks_handler, handle_verification_callback,
     handle_unverified_text_message, CALLBACK_REGRAS, CALLBACK_INICIO, CALLBACK_MENU,
     VERIFY_MEMBER_CALLBACK
 )
-from features.general.start import start
-from features.general.help import ajuda
 from features.business.opportunity import apresentacaooportunidade
 from features.business.brochures import folheteria
 from features.business.glossary import glossario
@@ -55,7 +55,7 @@ from utils.get_file_id import get_file_id_handler
 from utils.get_group_id import setup_group_id_handler
 from utils.monitoring.commands import send_top_users_command, reset_usage_data_command
 from utils.monitoring.tracker import UsageTracker
-from utils.monitoring.decorators import track_command_usage # <- Importa o decorador
+from utils.monitoring.decorators import track_command_usage
 
 # --- Configuração do Logging ---
 logging.basicConfig(
@@ -71,7 +71,6 @@ if not BOT_TOKEN:
 
 # --- Construtor da Aplicação do Bot (Escopo Global) ---
 ptb_app = ApplicationBuilder().token(BOT_TOKEN).build()
-# Inicializa e armazena o tracker de uso no contexto do bot para acesso global
 ptb_app.bot_data['usage_tracker'] = UsageTracker()
 
 
@@ -87,7 +86,6 @@ command_handlers = {
     "artes": artes, "treinamento": treinamento, "ranking": mostrar_ranking, "canais": canais,
     "fidelidade": fidelidade, "tabelas": tabelas_menu, "eventos": escolher_local_evento,
 }
-# Aplica o decorador de rastreamento a todos os comandos de usuário
 for command, handler in command_handlers.items():
     ptb_app.add_handler(CommandHandler(command, track_command_usage(handler)))
 
