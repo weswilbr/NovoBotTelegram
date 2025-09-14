@@ -1,6 +1,16 @@
 # NOME DO ARQUIVO: features/business/ranking_data.py
 # REFACTOR: Contém o dicionário com todos os dados das posições de ranking.
 
+"""
+Este módulo centraliza todos os dados relacionados às posições e rankings
+do plano de carreira.
+
+Manter os dados em uma estrutura isolada como esta (em vez de espalhada
+pelo código) torna o bot mais fácil de atualizar e manter. Se os requisitos
+de uma posição mudarem no futuro, basta alterar os valores neste dicionário.
+"""
+
+# Dicionário principal que mapeia o nome de cada posição para seus atributos.
 POSITIONS = {
     "Associate": {
         "emoji": "🔹",
@@ -243,4 +253,3 @@ POSITIONS = {
         "observacao": "Metade dos inscritos deve estar na linha de frente"
     }
 }
-

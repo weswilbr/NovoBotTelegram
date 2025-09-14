@@ -26,7 +26,7 @@ from core.handlers import callback_router
 from features.admin import commands as admin_commands
 from features.business import (
     opportunity, rewards, ranking, factory, transfer_factors,
-    brochures, glossary, tables, marketing, planning  # 'planning' foi adicionado
+    brochures, glossary, tables, marketing, planning
 )
 from features.community import (
     welcome, rules, invites, channels, loyalty, private_messaging
@@ -63,14 +63,15 @@ def register_command_handlers(app: Application) -> None:
         "produtos": product_handlers.beneficiosprodutos,
         "bonusconstrutor": bonus_builder.bonus_construtor,
         "marketingrede": marketing.marketing_rede,
-        "recompensas2024": rewards.recompensas2024,
+        "recompensas": rewards.mostrar_recompensas, # ATUALIZADO AQUI
         "apresentacao": opportunity.apresentacaooportunidade,
         "fatorestransferencia": transfer_factors.fatorestransferencia,
         "fabrica4life": factory.fabrica4life,
         "folheteria": brochures.folheteria,
         "glossario": glossary.glossario,
         "tabelas": tables.tabelas_menu,
-        "planificacao": planning.enviar_planificacao, # Comando adicionado
+        "planificacao": planning.enviar_planificacao,
+        "ranking": ranking.mostrar_ranking,
         # Comunidade
         "regras": rules.mostrar_regras,
         "convite": invites.mostrar_convites,
@@ -79,7 +80,6 @@ def register_command_handlers(app: Application) -> None:
         # Criativo e Treinamento
         "artes": art_creator.artes,
         "treinamento": training.treinamento,
-        "ranking": ranking.mostrar_ranking,
         # Prospectos
         "listarprospectos": prospect_list.listar_prospectos,
         "relatorio": prospect_list.gerar_relatorio_comando,
@@ -133,10 +133,12 @@ def register_callback_handlers(app: Application) -> None:
     app.add_handler(CallbackQueryHandler(brochures.brochures_callback_handler, pattern='^brochure_'))
     app.add_handler(CallbackQueryHandler(factory.factory_callback_handler, pattern='^factory_'))
     app.add_handler(CallbackQueryHandler(glossary.glossary_callback_handler, pattern='^glossary_'))
-    # --- NOVOS HANDLERS ADICIONADOS ---
     app.add_handler(CallbackQueryHandler(marketing.marketing_callback_handler, pattern='^marketing_'))
     app.add_handler(CallbackQueryHandler(opportunity.opportunity_callback_handler, pattern='^opportunity_'))
     app.add_handler(CallbackQueryHandler(planning.planning_callback_handler, pattern='^planning_'))
+    app.add_handler(CallbackQueryHandler(ranking.ranking_details_callback_handler, pattern='^ranking_details_'))
+    app.add_handler(CallbackQueryHandler(tables.tables_callback_handler, pattern='^tables_')) # ATUALIZADO AQUI
+    app.add_handler(CallbackQueryHandler(transfer_factors.transfer_factors_callback_handler, pattern='^tfactors_')) # ATUALIZADO AQUI
     
     # O roteador genérico deve ser o último.
     app.add_handler(CallbackQueryHandler(callback_router))
