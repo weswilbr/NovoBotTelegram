@@ -1,8 +1,7 @@
 # NOME DO ARQUIVO: main.py
-# REFACTOR: Versão final para Vercel, com healthcheck e logs no webhook.
+# REFACTOR: Versão final para Vercel, com inicialização e desligamento do bot no webhook.
 
 import logging
-import asyncio
 from fastapi import FastAPI, Request, Response
 from telegram import Update
 from telegram.ext import (
@@ -134,14 +133,25 @@ app = FastAPI()
 async def webhook(request: Request) -> Response:
     """Recebe o update do Telegram e o processa."""
     try:
+        # IMPORTANTE: Inicializa a aplicação antes de usar
+        await ptb_app.initialize()
+
         data = await request.json()
         logger.info(f"Update recebido: {data}")
         update = Update.de_json(data, ptb_app.bot)
+
         await ptb_app.process_update(update)
+
         return Response(status_code=200)
+
     except Exception as e:
         logger.exception("Erro ao processar update do Telegram")
         return Response(content=f"Erro interno: {e}", status_code=500)
+
+    finally:
+        # IMPORTANTE: Garante que a aplicação seja desligada no final
+        await ptb_app.shutdown()
+
 
 @app.get("/")
 async def healthcheck():
