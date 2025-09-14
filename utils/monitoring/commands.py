@@ -1,51 +1,40 @@
 # NOME DO ARQUIVO: utils/monitoring/commands.py
-# REFACTOR: Comandos para administradores monitorarem o uso do bot.
-import logging
+# REFACTOR: Simplificado para ler nomes diretamente dos dados salvos pelo tracker.
+
 from telegram import Update
 from telegram.ext import ContextTypes
-from config import ADMIN_USER_IDS, CANAL_ID_2
 from .tracker import UsageTracker
 
-logger = logging.getLogger(__name__)
-
-def admin_only(func):
-    """Decorator para restringir o comando apenas a admins definidos na config."""
-    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
-        if not (update.effective_user and update.effective_user.id in ADMIN_USER_IDS):
-            if update.message:
-                await update.message.reply_text("Você não tem autorização para usar este comando.")
-            return
-        return await func(update, context, *args, **kwargs)
-    return wrapper
-
-@admin_only
-async def send_top_users(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Envia a lista dos top 10 usuários para o chat de administração."""
-    usage_tracker: UsageTracker | None = context.bot_data.get('usage_tracker')
-    if not (usage_tracker and update.message):
-        logger.error("UsageTracker não encontrado no context.bot_data.")
-        if update.message: await update.message.reply_text("Erro: Módulo de monitoramento não inicializado.")
+async def send_top_users_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Envia uma mensagem com o ranking dos usuários mais ativos."""
+    tracker: UsageTracker = context.bot_data.get("usage_tracker")
+    if not tracker:
+        await update.message.reply_text("Erro: O módulo de rastreamento não foi inicializado.")
         return
 
-    top_users = usage_tracker.get_top_users()
-    if top_users:
-        message = "*🏆 Top 10 Usuários de Comandos*\n\n"
-        for i, (user_id, count) in enumerate(top_users):
-            message += f"{i+1}. User ID: `{user_id}` - Comandos: {count}\n"
-    else:
-        message = "Nenhum dado de uso de comando disponível."
+    top_users = tracker.get_top_users(top_n=10)
 
-    # Envia para o admin que solicitou
-    await update.message.reply_text(message, parse_mode='Markdown')
+    if not top_users:
+        await update.message.reply_text("Ainda não há dados de uso para exibir.")
+        return
 
-@admin_only
-async def reset_usage_data(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Reseta os dados de uso."""
-    usage_tracker: UsageTracker | None = context.bot_data.get('usage_tracker')
-    if not (usage_tracker and update.message):
-        if update.message: await update.message.reply_text("Erro: Módulo de monitoramento não inicializado.")
+    # Monta a mensagem usando os dados salvos (nome e contagem)
+    message_lines = ["🏆 *Ranking de Usuários Mais Ativos* 🏆\n"]
+    # O formato de top_users agora é [('user_id', {'name': 'Nome', 'count': X}), ...]
+    for i, (user_id, data) in enumerate(top_users):
+        user_name = data.get('name', f"ID {user_id}") # Pega o nome, com um fallback para o ID
+        count = data.get('count', 0)
+        message_lines.append(f"{i + 1}. {user_name} - {count} comandos")
+
+    response_message = "\n".join(message_lines)
+    await update.message.reply_text(response_message, parse_mode='Markdown')
+
+async def reset_usage_data_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Reseta todos os dados de uso."""
+    tracker: UsageTracker = context.bot_data.get("usage_tracker")
+    if not tracker:
+        await update.message.reply_text("Erro: O módulo de rastreamento não foi inicializado.")
         return
         
-    usage_tracker.reset_data()
-    await update.message.reply_text("Os dados de uso foram resetados.")
-
+    tracker.reset_data()
+    await update.message.reply_text("✅ Todos os dados de uso foram resetados com sucesso!")
