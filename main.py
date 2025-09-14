@@ -138,3 +138,4 @@ async def webhook(request: Request) -> Response:
 async def healthcheck():
     """Endpoint de healthcheck para a Vercel."""
     return {"status": "ok", "message": "Bot está rodando e pronto para receber webhooks"}
+# Forçando a atualização de todos os módulos - 14/09/2025
