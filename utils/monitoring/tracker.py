@@ -1,5 +1,5 @@
 # NOME DO ARQUIVO: utils/monitoring/tracker.py
-# REFACTOR: Modificado para usar Vercel KV (Redis) em vez de um arquivo JSON local.
+# REFACTOR: Modificado para salvar um objeto contendo nome e contagem no Vercel KV.
 
 import json
 import os
@@ -7,103 +7,78 @@ import redis
 from collections import defaultdict
 import logging
 
-# Configura um logger para este módulo
 logger = logging.getLogger(__name__)
 
 # --- Conexão com o Vercel KV ---
-# Conecta-se ao Vercel KV usando a URL fornecida nas variáveis de ambiente.
-# A biblioteca 'redis' sabe como lidar com a string de conexão 'rediss://...'
 try:
     KV_URL = os.getenv("KV_URL")
     if not KV_URL:
-        # Se a KV_URL não estiver definida, levantamos um erro para deixar claro.
-        raise ValueError("KV_URL não está configurada nas variáveis de ambiente.")
-    
-    # Cria o cliente Redis a partir da URL.
+        raise ValueError("KV_URL não está configurada.")
     kv_client = redis.from_url(KV_URL)
-    # Testa a conexão para garantir que está funcionando
     kv_client.ping()
     logger.info("Conexão com Vercel KV estabelecida com sucesso.")
-
 except Exception as e:
-    # Se a conexão falhar, o tracker funcionará em memória (não persistirá dados).
-    # Isso permite que o bot continue funcionando, mas sem salvar as estatísticas.
-    logger.warning(f"Não foi possível conectar ao Vercel KV: {e}. O UsageTracker funcionará em modo de memória (não persistente).")
+    logger.warning(f"Não foi possível conectar ao Vercel KV: {e}. O UsageTracker funcionará em modo de memória.")
     kv_client = None
 
 class UsageTracker:
     def __init__(self):
-        """Inicializa o tracker, definindo a chave que será usada no banco de dados KV."""
-        # A chave onde vamos armazenar todos os dados de uso no Vercel KV.
-        self.redis_key = "bot_usage_data"
+        self.redis_key = "bot_usage_data_v2" # Usamos uma nova chave para a nova estrutura de dados
 
-    def _load_data(self) -> defaultdict:
-        """
-        Carrega os dados de contagem de usuários do Vercel KV.
-        Retorna um dicionário com os dados ou um dicionário vazio se não houver dados.
-        """
+    def _load_data(self) -> dict:
+        """Carrega os dados completos do Vercel KV."""
         if not kv_client:
-            return defaultdict(int) # Retorna dicionário vazio se não houver conexão com KV
-
+            return {}
         try:
-            # Pega os dados da chave no KV
             data = kv_client.get(self.redis_key)
-            if data:
-                # Os dados são armazenados como uma string JSON, então precisamos decodificá-los
-                user_counts = json.loads(data.decode('utf-8'))
-                return defaultdict(int, user_counts)
-            return defaultdict(int) # Retorna dicionário vazio se a chave não existir
+            return json.loads(data.decode('utf-8')) if data else {}
         except Exception as e:
             logger.error(f"Falha ao carregar dados do Vercel KV: {e}")
-            return defaultdict(int)
+            return {}
 
-    def _save_data(self, user_counts: dict) -> None:
-        """
-        Salva o dicionário de contagem de usuários no Vercel KV.
-        """
+    def _save_data(self, all_user_data: dict) -> None:
+        """Salva os dados completos no Vercel KV."""
         if not kv_client:
-            return # Não faz nada se não houver conexão com KV
-
+            return
         try:
-            # Converte o dicionário para uma string JSON e salva no KV
-            kv_client.set(self.redis_key, json.dumps(user_counts))
+            kv_client.set(self.redis_key, json.dumps(all_user_data))
         except Exception as e:
             logger.error(f"Falha ao salvar dados no Vercel KV: {e}")
             
-    def track_usage(self, user_id: int) -> None:
-        """
-        Rastreia e incrementa o uso de um comando por um usuário.
-        """
+    def track_usage(self, user_id: int, first_name: str) -> None:
+        """Rastreia o uso, salvando ID, nome e incrementando a contagem."""
         user_id_str = str(user_id)
-        user_counts = self._load_data()
-        user_counts[user_id_str] += 1
-        self._save_data(user_counts)
-        logger.info(f"Uso rastreado para o usuário {user_id_str}. Total: {user_counts[user_id_str]}")
+        all_data = self._load_data()
+        
+        # Pega os dados do usuário atual ou cria um novo registro
+        user_data = all_data.get(user_id_str, {'name': first_name, 'count': 0})
+        
+        # Atualiza o nome (caso o usuário tenha mudado) e incrementa a contagem
+        user_data['name'] = first_name
+        user_data['count'] += 1
+        
+        # Coloca os dados atualizados de volta no objeto principal
+        all_data[user_id_str] = user_data
+        
+        self._save_data(all_data)
+        logger.info(f"Uso rastreado para {first_name} ({user_id_str}). Total: {user_data['count']}")
 
     def get_top_users(self, top_n: int = 10) -> list:
-        """
-        Busca os dados do Vercel KV e retorna uma lista com os N usuários mais ativos.
-        """
-        user_counts = self._load_data()
-        if not user_counts:
+        """Retorna uma lista dos N usuários mais ativos, já com nomes."""
+        all_data = self._load_data()
+        if not all_data:
             return []
         
-        # Ordena os itens do dicionário pelo valor (contagem) em ordem decrescente
-        sorted_users = sorted(user_counts.items(), key=lambda item: item[1], reverse=True)
+        # Ordena os usuários pela contagem (item[1]['count'])
+        sorted_users = sorted(all_data.items(), key=lambda item: item[1]['count'], reverse=True)
         
-        # Retorna os N primeiros da lista ordenada
         return sorted_users[:top_n]
 
     def reset_data(self) -> None:
-        """
-        Apaga todos os dados de uso do Vercel KV, resetando a contagem.
-        """
+        """Apaga todos os dados de uso do Vercel KV."""
         if not kv_client:
-            logger.warning("Tracker em modo de memória. Não há dados persistidos para resetar.")
             return
-
         try:
-            # Deleta a chave do banco de dados
             kv_client.delete(self.redis_key)
             logger.info("Dados de uso foram resetados com sucesso no Vercel KV.")
         except Exception as e:
