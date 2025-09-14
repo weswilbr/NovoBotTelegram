@@ -1,28 +1,32 @@
 # NOME DO ARQUIVO: core/handlers.py
-# REFACTOR: Roteador principal que direciona todas as queries de callback para seus handlers específicos.
+# REFACTOR: Roteador de callbacks limpo, com todas as referências a códigos antigos removidas.
+
 import logging
 from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.error import BadRequest
 
-# Importa todos os handlers de callback das features
-from features.general import help
+# --- Imports Corrigidos e Limpos ---
+# A função 'ajuda' agora é importada do local correto.
+from features.general.help_command import ajuda
 from features.general.bonus_builder import callback_bonus_construtor
 from features.products.handlers import callback_beneficios_handler
 from features.business import (
-    planning, tables, marketing, kits, factory,
+    planning, tables, marketing, factory,
     transfer_factors, brochures, glossary, opportunity, ranking
 )
-from features.community import welcome, events, loyalty, invites, channels
-from features.user_tools.prospect_list import confirmar_dados, cancelar_conversa, remover_prospecto, editar_prospecto
+from features.community import loyalty, invites, channels
 from features.training import training, reading_guide
 from features.creative import art_creator
 
+# Utilitários
 from utils.anti_flood import check_flood
-from utils.verification import group_member_required
+# Usando o decorador padronizado que criamos
+from utils.decorators import group_member_required
 
 logger = logging.getLogger(__name__)
 
+# Dicionário de roteamento limpo, sem funcionalidades removidas
 CALLBACK_ROUTING = {
     # General
     'bonusconstrutor_': callback_bonus_construtor,
@@ -36,7 +40,6 @@ CALLBACK_ROUTING = {
     'preco_': tables.callback_tabelas,
     'voltar_tabelas_principal': tables.callback_tabelas,
     'baixar_video_marketing': marketing.handle_download_callback,
-    'kit_': kits.handle_kit_choice,
     'fabrica_': factory.callback_fabrica4life,
     'fatorestransf_': transfer_factors.callback_fatorestransf_handler,
     'folheteria_': brochures.callback_folheteria,
@@ -45,9 +48,6 @@ CALLBACK_ROUTING = {
     'apresentacao_': opportunity.callback_apresentacao_oportunidade,
     'detalhes_ranking_': ranking.enviar_detalhes_ranking,
     # Community
-    'welcome_': welcome.welcome_callbacks_handler,
-    'verify_member': welcome.handle_verification_callback,
-    'evento_': events.enviar_evento,
     'fidelidade_': loyalty.callback_fidelidade,
     'convite_': invites.enviar_convite,
     'voltar_convites': invites.mostrar_convites,
@@ -55,11 +55,6 @@ CALLBACK_ROUTING = {
     'telegram': channels.handle_canais_callback,
     'whatsapp': channels.handle_canais_callback,
     'voltar_canais': channels.handle_canais_callback,
-    # User Tools
-    'confirmar': confirmar_dados,
-    'cancelar': cancelar_conversa,
-    'remover_': remover_prospecto,
-    'editar_': editar_prospecto,
     # Training
     'apoio': training.handle_treinamento_callback,
     'tutoriais': training.handle_treinamento_callback,
@@ -75,20 +70,25 @@ CALLBACK_ROUTING = {
     'voltar_menu_artes_principal': art_creator.button_callback,
 }
 
+# NOTA: Os callbacks de 'welcome' foram removidos daqui porque já são
+# tratados por um handler mais específico no main.py, evitando redundância.
+
 @group_member_required
-async def callbackqueryhandler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Roteador principal para todas as queries de callback."""
+async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Roteador principal para todas as queries de callback que não foram capturadas por handlers mais específicos."""
     query = update.callback_query
     if not (query and query.data): return
 
+    # Verifica anti-flood antes de processar
     if not await check_flood(update): return
 
     await query.answer()
     callback_data = query.data
-    logger.info(f"Callback recebido: '{callback_data}'")
+    logger.info(f"Callback roteado via core/handlers: '{callback_data}'")
 
     try:
         handler_to_call = None
+        # Encontra o handler correspondente ao prefixo do callback
         for prefix, handler in CALLBACK_ROUTING.items():
             if callback_data.startswith(prefix):
                 handler_to_call = handler
@@ -97,12 +97,14 @@ async def callbackqueryhandler(update: Update, context: ContextTypes.DEFAULT_TYP
         if handler_to_call:
             await handler_to_call(update, context)
         else:
-            logger.warning(f"Nenhum handler para: '{callback_data}'.")
-            await help.ajuda(update, context)
+            # Se nenhum handler for encontrado, exibe o menu de ajuda como fallback
+            logger.warning(f"Nenhum handler no roteador para: '{callback_data}'. Exibindo ajuda.")
+            # Chamada corrigida para a função 'ajuda'
+            await ajuda(update, context)
 
     except BadRequest as e:
+        # Ignora o erro "message is not modified" que é comum e inofensivo
         if "message is not modified" not in str(e).lower():
             logger.error(f"Erro de BadRequest em '{callback_data}': {e}")
     except Exception as e:
         logger.error(f"Erro inesperado em '{callback_data}': {e}", exc_info=True)
-
