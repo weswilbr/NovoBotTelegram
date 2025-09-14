@@ -1,5 +1,6 @@
 # NOME DO ARQUIVO: features/community/welcome.py
-# REFACTOR: Gerencia o fluxo de boas-vindas e verificação de novos membros.
+# REFACTOR: Corrigido o import da função 'ajuda' para apontar para o arquivo correto.
+
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
@@ -9,7 +10,9 @@ import config
 
 # Importação corrigida com o caminho completo do módulo
 from features.admin.commands import _silence_user_core
-from features.general.help import ajuda
+# LINHA ANTIGA E INCORRETA: from features.general.help import ajuda
+# LINHA CORRIGIDA ABAIXO:
+from features.general.help_command import ajuda
 from features.community.rules import mostrar_regras
 
 logger = logging.getLogger(__name__)
@@ -48,7 +51,6 @@ async def darboasvindas_handler(update: Update, context: ContextTypes.DEFAULT_TY
     if str(chat_id) != str(config.CANAL_ID_2):
         return
 
-    # Inicializa os dicionários de forma segura
     context.chat_data.setdefault(UNVERIFIED_MEMBERS_KEY, [])
     context.chat_data.setdefault(WELCOME_MESSAGE_IDS_KEY, {})
 
@@ -98,6 +100,7 @@ async def welcome_callbacks_handler(update: Update, context: ContextTypes.DEFAUL
         await query.message.reply_text("👇 Clique para acessar o menu:", reply_markup=criar_teclado_menu())
 
     elif query.data == CALLBACK_MENU:
+        # Agora esta chamada funciona e usa a versão correta da função ajuda
         await ajuda(update, context)
         await query.edit_message_reply_markup(reply_markup=None)
 
@@ -151,4 +154,3 @@ async def handle_unverified_text_message(update: Update, context: ContextTypes.D
             silence_notice = (f"⚠️ \\*{user.first_name}\\*, você foi silenciado\\(a\\)\\.\n"
                               "Clique no botão na sua mensagem de boas\\-vindas para poder interagir\\.")
             await context.bot.send_message(chat_id=chat.id, text=silence_notice, parse_mode=ParseMode.MARKDOWN_V2)
-
