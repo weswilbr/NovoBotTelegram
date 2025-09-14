@@ -1,10 +1,11 @@
 # NOME DO ARQUIVO: requirements.txt
+# REFACTOR: Versão final com dependências flexíveis para resolver conflitos.
 
 python-telegram-bot[job-queue]==21.9
 psycopg2-binary
 fpdf2
 Pillow
 python-dotenv==1.0.0
-httpx==0.25.2
-uvicorn==0.23.2
-fastapi==0.103.2
+httpx
+uvicorn
+fastapi
