@@ -1,5 +1,5 @@
 # NOME DO ARQUIVO: features/general/help_command.py
-# REFACTOR: Centraliza os comandos /start e /ajuda, com menu atualizado sem /eventos.
+# REFACTOR: Menu de ajuda final, sem menções a prospectos ou outras funcionalidades removidas.
 
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -24,7 +24,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 @group_member_required
 async def ajuda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Exibe o menu de ajuda completo e atualizado."""
+    """Exibe o menu de ajuda completo e final."""
     mensagem_ajuda = (
         "🌟 *Menu de Ajuda do Bot* 🌟\n\n"
         "Explore as diversas funcionalidades do bot!\n\n"
@@ -41,8 +41,6 @@ async def ajuda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "   • /fidelidade - Informações sobre o programa de fidelidade\n\n"
         "📣 *Materiais e Comunidade:*\n"
         "   • /folheteria - Acesse panfletos e o catálogo\n"
-        # A LINHA ABAIXO FOI REMOVIDA
-        # "   • /eventos - Veja os próximos eventos\n"
         "   • /convite - Envie modelos de convites\n"
         "   • /regras - Veja as regras do grupo\n\n"
         "⚙️ *Comandos Gerais:*\n"
