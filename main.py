@@ -1,5 +1,5 @@
 # NOME DO ARQUIVO: main.py
-# REFACTOR: Versão final adaptada para Vercel com um servidor Flask.
+# REFACTOR: Versão final otimizada para Vercel com Flask e asyncio.
 
 import logging
 import asyncio
@@ -16,7 +16,6 @@ from config import BOT_TOKEN, CANAL_ID_2
 from core.handlers import callback_router
 
 # --- Módulos de Funcionalidades e Utilitários ---
-# (Todas as suas outras importações permanecem aqui, sem alterações)
 from features.admin import commands as admin_commands
 from features.business import (
     opportunity, rewards, ranking, factory, transfer_factors,
@@ -40,16 +39,17 @@ from utils.monitoring.tracker import UsageTracker
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# --- Construção da Aplicação do Bot (fora do handler do Flask) ---
+# --- Inicialização da Aplicação do Bot (Escopo Global) ---
+# A aplicação é construída APENAS UMA VEZ quando a função serverless "acorda".
+# Isso é muito mais eficiente do que reconstruí-la a cada mensagem.
 if not BOT_TOKEN:
     raise ValueError("CRÍTICO: BOT_TOKEN não foi encontrado.")
 
-# Cria a aplicação PTB
 ptb_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-# Registra todos os handlers (isso não muda)
+# Registra todos os handlers
 ptb_app.bot_data['usage_tracker'] = UsageTracker()
-# ... (Cole aqui TODAS as suas funções de registro: register_command_handlers, etc.)
+
 def register_command_handlers(app: Application) -> None:
     command_handlers = {
         "start": start.start, "ajuda": help.ajuda, "produtos": product_handlers.beneficiosprodutos,
@@ -67,8 +67,7 @@ def register_command_handlers(app: Application) -> None:
         "desfixar": admin_commands.desfixar, "enviartextocanal": admin_commands.enviartextocanal,
         "topusers": monitoring_commands.send_top_users_command, "resetusage": monitoring_commands.reset_usage_data_command,
     }
-    for command, handler in command_handlers.items():
-        app.add_handler(CommandHandler(command, handler))
+    for command, handler in command_handlers.items(): app.add_handler(CommandHandler(command, handler))
     app.add_handler(store_finder.loja_handler)
 
 def register_callback_handlers(app: Application) -> None:
@@ -92,24 +91,25 @@ register_callback_handlers(ptb_app)
 register_message_handlers(ptb_app)
 register_utility_handlers(ptb_app)
 
+# Cria um loop de eventos asyncio que pode ser reutilizado entre as chamadas
+loop = asyncio.get_event_loop()
+
 # --- Servidor Flask para a Vercel ---
 app = Flask(__name__)
 
 @app.route('/', methods=['POST'])
-def webhook() -> str:
+def webhook() -> tuple[str, int]:
     """Função que a Vercel chama. Ela recebe o update do Telegram e o processa."""
     try:
         data = request.get_json(force=True)
         update = Update.de_json(data, ptb_app.bot)
-        # Usamos asyncio para rodar a função assíncrona do bot em um ambiente síncrono (Flask)
-        asyncio.run(ptb_app.process_update(update))
-        return 'OK'
-    except json.JSONDecodeError as e:
-        logger.error(f"Erro ao decodificar JSON: {e}")
-        return 'Bad Request', 400
+        
+        # Executa a função assíncrona do bot no loop de eventos existente.
+        # Isso é mais eficiente do que criar um novo loop para cada mensagem.
+        loop.run_until_complete(ptb_app.process_update(update))
+        
+        return 'OK', 200
     except Exception as e:
         logger.error(f"Erro no webhook: {e}", exc_info=True)
+        # Retorna uma tupla (resposta, código de status)
         return 'Internal Server Error', 500
-
-# NOTA: A Vercel não precisa do if __name__ == '__main__':
-# Ela vai encontrar e rodar o objeto 'app' do Flask automaticamente.
