@@ -21,8 +21,8 @@ from features.creative import art_creator
 
 # Utilitários
 from utils.anti_flood import check_flood
-# Usando o decorador padronizado que criamos
-from utils.decorators import group_member_required
+# LINHA CORRIGIDA ABAIXO
+from utils.verification import group_member_required
 
 logger = logging.getLogger(__name__)
 
@@ -108,3 +108,4 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             logger.error(f"Erro de BadRequest em '{callback_data}': {e}")
     except Exception as e:
         logger.error(f"Erro inesperado em '{callback_data}': {e}", exc_info=True)
+

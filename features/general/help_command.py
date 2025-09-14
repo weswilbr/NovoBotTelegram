@@ -5,7 +5,8 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.constants import ChatType, ParseMode
 
-from utils.decorators import group_member_required
+# LINHA CORRIGIDA ABAIXO
+from utils.verification import group_member_required
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Envia uma mensagem de boas-vindas."""
@@ -52,3 +53,4 @@ async def ajuda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.callback_query.edit_message_text(mensagem_ajuda, parse_mode='Markdown')
     else:
         await update.message.reply_text(mensagem_ajuda, parse_mode='Markdown')
+
