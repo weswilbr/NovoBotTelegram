@@ -1,11 +1,11 @@
 # NOME DO ARQUIVO: features/general/help_command.py
-# REFACTOR: Centraliza os comandos /start e /ajuda com menu completo e decorador funcional.
+# REFACTOR: Centraliza os comandos /start e /ajuda, com menu atualizado sem /eventos.
 
 from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.constants import ChatType, ParseMode
 
-# Importa o decorador REAL que acabamos de criar
+# Importa o decorador REAL que criamos
 from utils.decorators import group_member_required
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -22,10 +22,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     
     await update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
 
-@group_member_required  # <-- Agora este decorador tem uma função real!
+@group_member_required
 async def ajuda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Exibe o menu de ajuda completo e atualizado."""
-    # Mensagem de ajuda completa, refletindo os comandos reais do bot
     mensagem_ajuda = (
         "🌟 *Menu de Ajuda do Bot* 🌟\n\n"
         "Explore as diversas funcionalidades do bot!\n\n"
@@ -42,7 +41,8 @@ async def ajuda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "   • /fidelidade - Informações sobre o programa de fidelidade\n\n"
         "📣 *Materiais e Comunidade:*\n"
         "   • /folheteria - Acesse panfletos e o catálogo\n"
-        "   • /eventos - Veja os próximos eventos\n"
+        # A LINHA ABAIXO FOI REMOVIDA
+        # "   • /eventos - Veja os próximos eventos\n"
         "   • /convite - Envie modelos de convites\n"
         "   • /regras - Veja as regras do grupo\n\n"
         "⚙️ *Comandos Gerais:*\n"
@@ -50,7 +50,6 @@ async def ajuda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "   • /ajuda - Exibe esta mensagem de ajuda\n"
     )
 
-    # Lógica para responder a um botão (callback) ou a uma mensagem
     if update.callback_query:
         await update.callback_query.edit_message_text(mensagem_ajuda, parse_mode='Markdown')
     else:
