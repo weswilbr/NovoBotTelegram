@@ -1,146 +1,93 @@
-# NOME DO ARQUIVO: main.py
-# --- Importações Padrão e de Terceiros ---
+# NOME DO ARQUIVO: core/handlers.py
 import logging
-import sys
-from fastapi import FastAPI, Request, Response, BackgroundTasks
 from telegram import Update
-from telegram.ext import (
-    Application, ApplicationBuilder, CommandHandler, MessageHandler,
-    CallbackQueryHandler, filters
-)
+from telegram.ext import ContextTypes
+from telegram.error import BadRequest
 
-# --- Configuração e Módulos do Bot ---
-from config import BOT_TOKEN, CANAL_ID_2
-from core.handlers import callback_router
-
-# --- Handlers ---
-from features.admin.commands import (
-    listar_admins, silenciar, banir, desbanir, fixar, desfixar, enviartextocanal
+# --- Imports Corrigidos e Limpos ---
+from features.general.help_command import ajuda
+from features.general.bonus_builder import callback_bonus_construtor
+from features.products.handlers import products_callback_handler
+from features.business import (
+    tables, marketing, factory,
+    transfer_factors, brochures, glossary, opportunity, ranking
 )
-from features.general.help_command import start, ajuda
-from features.community.private_messaging import handle_private_message
-from features.community.welcome import (
-    darboasvindas_handler, welcome_callbacks_handler, handle_verification_callback,
-    handle_unverified_text_message, CALLBACK_REGRAS, CALLBACK_INICIO, CALLBACK_MENU,
-    VERIFY_MEMBER_CALLBACK
-)
-from features.business.opportunity import apresentacaooportunidade
-from features.business.brochures import folheteria
-from features.business.glossary import glossario
-from features.products.handlers import beneficiosprodutos
-from features.business.marketing import marketing_rede
-from features.business.rewards import recompensas
-from features.business.transfer_factors import fatorestransferencia
-from features.business.factory import fabrica4life
-from features.general.bonus_builder import bonus_construtor
-from features.community.rules import mostrar_regras
-from features.community.invites import mostrar_convites
-from features.creative.art_creator import artes
-from features.training.training import treinamento
-from features.business.ranking import mostrar_ranking
-from features.community.channels import canais
-from features.community.loyalty import fidelidade
-from features.business.tables import tabelas_menu
-from features.user_tools.store_finder import loja_handler
+from features.community import loyalty, invites, channels
+from features.training import training
+from features.creative import art_creator
 
-# --- Utilitários ---
-from utils.error_handler import error_handler
-from utils.get_file_id import get_file_id_handler
-from utils.get_group_id import setup_group_id_handler
+# Utilitários
+from utils.anti_flood import check_flood
 
-# --- Logging ---
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
-)
 logger = logging.getLogger(__name__)
 
-# --- Validação Inicial ---
-if not BOT_TOKEN:
-    logger.critical("CRÍTICO: BOT_TOKEN não foi encontrado.")
-    sys.exit(1)
+# Dicionário de roteamento para todos os callbacks do bot
+CALLBACK_ROUTING = {
+    'products_': products_callback_handler,
+    'bonusconstrutor_': callback_bonus_construtor,
+    'tabela_': tables.callback_tabelas,
+    'preco_': tables.callback_tabelas,
+    'voltar_tabelas_principal': tables.callback_tabelas,
+    'baixar_video_marketing': marketing.callback_marketing_download,
+    'fabrica_': factory.callback_fabrica4life,
+    'fatorestransf_': transfer_factors.callback_fatorestransf_handler,
+    'folheteria_': brochures.callback_folheteria,
+    'glossario_': glossary.callback_glossario,
+    'baixar_glossario': glossary.callback_glossario,
+    'apresentacao_': opportunity.callback_apresentacao_oportunidade,
+    'detalhes_ranking_': ranking.enviar_detalhes_ranking,
+    'fidelidade_': loyalty.callback_fidelidade,
+    'convite_': invites.enviar_convite,
+    'voltar_convites': invites.mostrar_convites,
+    'youtube': channels.handle_canais_callback,
+    'telegram': channels.handle_canais_callback,
+    'whatsapp': channels.handle_canais_callback,
+    'voltar_canais': channels.handle_canais_callback,
+    'apoio': training.handle_treinamento_callback,
+    'tutoriais': training.handle_treinamento_callback,
+    'voltar': training.handle_treinamento_callback,
+    'apoio_': training.handle_treinamento_callback,
+    'tutoriais_': training.handle_treinamento_callback,
+    'arte_': art_creator.button_callback,
+    'banner_': art_creator.button_callback,
+    'menu_': art_creator.button_callback,
+    'criativo_': art_creator.button_callback,
+    'voltar_menu_artes_principal': art_creator.button_callback,
+}
 
-# --- Construtor do Bot ---
-# Garante que temos apenas uma instância da aplicação
-ptb_app = ApplicationBuilder().token(BOT_TOKEN).build()
+async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Roteador principal para todas as queries de callback."""
+    query = update.callback_query
+    if not (query and query.data):
+        return
 
-# --- Registro dos Handlers ---
-def register_handlers(app: Application):
-    # 1. Comandos de usuário
-    command_handlers = {
-        "start": start, "ajuda": ajuda, "produtos": beneficiosprodutos,
-        "apresentacaooportunidade": apresentacaooportunidade, "folheteria": folheteria,
-        "glossario": glossario, "marketingrede": marketing_rede, "recompensas": recompensas,
-        "fatorestransferencia": fatorestransferencia, "fabrica4life": fabrica4life,
-        "bonusconstrutor": bonus_construtor, "regras": mostrar_regras, "convite": mostrar_convites,
-        "artes": artes, "treinamento": treinamento, "ranking": mostrar_ranking,
-        "canais": canais, "fidelidade": fidelidade, "tabelas": tabelas_menu
-    }
-    for command, handler in command_handlers.items():
-        app.add_handler(CommandHandler(command, handler))
+    # Verifica se o usuário está clicando rápido demais
+    if not await check_flood(update):
+        return
+    
+    callback_data = query.data
+    logger.info(f"Callback roteado: '{callback_data}'")
 
-    app.add_handler(loja_handler)
-
-    # 2. Comandos de admin
-    admin_command_handlers = {
-        "listaradmins": listar_admins, "silenciar": silenciar, "banir": banir,
-        "desbanir": desbanir, "fixar": fixar, "desfixar": desfixar,
-        "enviartextocanal": enviartextocanal
-    }
-    for command, handler in admin_command_handlers.items():
-        app.add_handler(CommandHandler(command, handler))
-
-    # 3. Callbacks e mensagens
-    app.add_handler(CallbackQueryHandler(
-        welcome_callbacks_handler,
-        pattern=f"^({CALLBACK_REGRAS}|{CALLBACK_INICIO}|{CALLBACK_MENU}|ajuda_.*)$"
-    ))
-    app.add_handler(CallbackQueryHandler(handle_verification_callback, pattern=f"^{VERIFY_MEMBER_CALLBACK}$"))
-    app.add_handler(CallbackQueryHandler(callback_router))
-    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, darboasvindas_handler))
-    app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE & ~filters.COMMAND, handle_private_message))
-    if CANAL_ID_2:
-        app.add_handler(MessageHandler(
-            filters.TEXT & ~filters.COMMAND & filters.Chat(chat_id=int(CANAL_ID_2)),
-            handle_unverified_text_message
-        ))
-
-    # 4. Utilitários
-    app.add_handler(get_file_id_handler())
-    app.add_handler(setup_group_id_handler())
-    app.add_error_handler(error_handler)
-
-register_handlers(ptb_app)
-
-# --- Função Auxiliar para Background Task ---
-async def process_update_task(update: Update, app: Application) -> None:
-    """Função para ser executada em segundo plano para processar o update."""
-    await app.process_update(update)
-
-# --- FastAPI App ---
-app = FastAPI()
-
-@app.post("/")
-async def webhook(request: Request, background_tasks: BackgroundTasks) -> Response:
-    """
-    Recebe update do Telegram e o processa em segundo plano para evitar o erro 'Event loop is closed'.
-    """
     try:
-        if not ptb_app._initialized:
-            await ptb_app.initialize()
-        
-        data = await request.json()
-        update = Update.de_json(data, ptb_app.bot)
+        handler_to_call = None
+        # Procura o handler correspondente no dicionário de roteamento
+        for prefix, handler in CALLBACK_ROUTING.items():
+            if callback_data.startswith(prefix):
+                handler_to_call = handler
+                break
 
-        background_tasks.add_task(process_update_task, update, ptb_app)
-        
-        return Response(status_code=200)
+        if handler_to_call:
+            await handler_to_call(update, context)
+        else:
+            # Se nenhum handler for encontrado, exibe a mensagem de ajuda como fallback
+            await query.answer() # Adicionado aqui para o caso de fallback
+            logger.warning(f"Nenhum handler no roteador para: '{callback_data}'. Exibindo ajuda.")
+            await ajuda(update, context)
+
+    except BadRequest as e:
+        # Ignora o erro comum de "mensagem não modificada"
+        if "message is not modified" not in str(e).lower():
+            logger.error(f"Erro de BadRequest em '{callback_data}': {e}")
     except Exception as e:
-        logger.exception("Erro ao receber ou enfileirar update do Telegram")
-        return Response(content=f"Erro interno: {e}", status_code=500)
-
-@app.get("/")
-async def healthcheck():
-    """Healthcheck endpoint."""
-    return {"status": "ok", "message": "Bot está rodando e pronto para receber webhooks"}
+        logger.error(f"Erro inesperado em '{callback_data}': {e}", exc_info=True)
 
