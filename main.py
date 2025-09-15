@@ -1,9 +1,5 @@
 # NOME DO ARQUIVO: main.py
-# Versão enxuta e robusta para FastAPI + python-telegram-bot v20+
-
-# ------------------------------------------------------------------- #
-# Importações padrão / terceiros
-# ------------------------------------------------------------------- #
+# FastAPI + python-telegram-bot v20 sem BackgroundTasks
 import logging
 import sys
 from pathlib import Path
@@ -16,35 +12,34 @@ from telegram.ext import (
     CallbackQueryHandler, filters,
 )
 
-from config import BOT_TOKEN, CANAL_ID_2          # variáveis de ambiente / config
-from core.handlers import callback_router         # roteador de callbacks globais
+from config import BOT_TOKEN, CANAL_ID_2
+from core.handlers import callback_router
 
 # ------------------------------------------------------------------- #
-# Configuração de logging
+# Logging
 # ------------------------------------------------------------------- #
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
-    force=True,          # garante que o formato seja aplicado mesmo após PTB configurar o root
+    force=True,
 )
 logger = logging.getLogger(__name__)
 
 # ------------------------------------------------------------------- #
-# Verificação do token do bot
+# BOT TOKEN
 # ------------------------------------------------------------------- #
 if not BOT_TOKEN:
     logger.critical("CRÍTICO: BOT_TOKEN não foi encontrado.")
     sys.exit(1)
 
 # ------------------------------------------------------------------- #
-# Criação da aplicação PTB
+# PTB Application
 # ------------------------------------------------------------------- #
 ptb_app: Application = ApplicationBuilder().token(BOT_TOKEN).build()
 
 # ------------------------------------------------------------------- #
-# Importação dos handlers (após criar a PTB Application)
+# IMPORTS DE HANDLERS (após criar ptb_app)
 # ------------------------------------------------------------------- #
-# – Colocado aqui para não aumentar o cold-start, pois esses módulos carregam YAMLs, etc.
 from features.admin.commands import (
     listar_admins, silenciar, banir, desbanir, fixar, desfixar, enviartextocanal
 )
@@ -79,10 +74,9 @@ from utils.get_file_id import get_file_id_handler
 from utils.get_group_id import setup_group_id_handler
 
 # ------------------------------------------------------------------- #
-# Função para registrar todos os handlers em um único lugar
+# REGISTER HANDLERS
 # ------------------------------------------------------------------- #
 def register_handlers(app: Application) -> None:
-    # 1) Comandos de usuário
     user_cmds = {
         "start": start, "ajuda": ajuda, "produtos": beneficiosprodutos,
         "apresentacaooportunidade": apresentacaooportunidade, "folheteria": folheteria,
@@ -96,10 +90,8 @@ def register_handlers(app: Application) -> None:
     for cmd, handler in user_cmds.items():
         app.add_handler(CommandHandler(cmd, handler))
 
-    # `loja_handler` já é um objeto Handler
     app.add_handler(loja_handler)
 
-    # 2) Comandos de admin
     admin_cmds = {
         "listaradmins": listar_admins, "silenciar": silenciar, "banir": banir,
         "desbanir": desbanir, "fixar": fixar, "desfixar": desfixar,
@@ -108,7 +100,6 @@ def register_handlers(app: Application) -> None:
     for cmd, handler in admin_cmds.items():
         app.add_handler(CommandHandler(cmd, handler))
 
-    # 3) Callbacks & mensagens
     app.add_handler(CallbackQueryHandler(
         welcome_callbacks_handler,
         pattern=f"^({CALLBACK_REGRAS}|{CALLBACK_INICIO}|{CALLBACK_MENU}|ajuda_.*)$",
@@ -129,20 +120,17 @@ def register_handlers(app: Application) -> None:
             handle_unverified_text_message,
         ))
 
-    # 4) Utilitários
     app.add_handler(get_file_id_handler())
     app.add_handler(setup_group_id_handler())
     app.add_error_handler(error_handler)
 
-# registra tudo
 register_handlers(ptb_app)
 
 # ------------------------------------------------------------------- #
-# FastAPI ‑ Webhook
+# FASTAPI APP
 # ------------------------------------------------------------------- #
 app = FastAPI()
 
-# Servir arquivos estáticos (favicon, pdfs, etc.)
 static_dir = Path(__file__).parent / "static"
 if static_dir.exists():
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
@@ -150,14 +138,13 @@ if static_dir.exists():
 @app.post("/")
 async def webhook(request: Request) -> Response:
     """
-    Endpoint de webhook chamado pelo Telegram.
-    Processa o update *dentro* do mesmo event-loop para evitar
-    'RuntimeError: Event loop is closed' em ambientes serverless.
+    Processa o update imediatamente (sem BackgroundTasks) para
+    evitar 'Event loop is closed' em ambientes serverless.
     """
     try:
-        await ptb_app.initialize()               # seguro para ser chamado muitas vezes
+        await ptb_app.initialize()                  # idempotente
         update = Update.de_json(await request.json(), ptb_app.bot)
-        await ptb_app.process_update(update)     # processamento síncrono
+        await ptb_app.process_update(update)        # processamento síncrono
         return Response(status_code=200)
     except Exception as exc:
         logger.exception("Erro ao processar update")
@@ -165,5 +152,4 @@ async def webhook(request: Request) -> Response:
 
 @app.get("/")
 async def healthcheck():
-    """Simples health-check para ver se a API está viva."""
     return {"status": "ok", "message": "Bot está rodando e pronto para receber webhooks"}
