@@ -2,10 +2,10 @@
 # --- Importações Padrão e de Terceiros ---
 import logging
 import sys
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, BackgroundTasks # ADICIONADO: BackgroundTasks
 from telegram import Update
 from telegram.ext import (
-    ApplicationBuilder, CommandHandler, MessageHandler,
+    Application, ApplicationBuilder, CommandHandler, MessageHandler,
     CallbackQueryHandler, filters
 )
 
@@ -75,15 +75,12 @@ command_handlers = {
     "canais": canais, "fidelidade": fidelidade, "tabelas": tabelas_menu
 }
 for command, handler in command_handlers.items():
-    # Decorador de rastreamento removido
     ptb_app.add_handler(CommandHandler(command, handler))
 
-# Adiciona o ConversationHandler para /minhaloja
 ptb_app.add_handler(loja_handler)
 
 # 2. Comandos de admin
 admin_command_handlers = {
-    # Comandos do tracker removidos
     "listaradmins": listar_admins, "silenciar": silenciar, "banir": banir,
     "desbanir": desbanir, "fixar": fixar, "desfixar": desfixar,
     "enviartextocanal": enviartextocanal
@@ -111,21 +108,36 @@ ptb_app.add_handler(get_file_id_handler())
 ptb_app.add_handler(setup_group_id_handler())
 ptb_app.add_error_handler(error_handler)
 
+
+# --- Função Auxiliar para Background Task ---
+async def process_update_task(update: Update, app: Application) -> None:
+    """Função para ser executada em segundo plano para processar o update."""
+    await app.process_update(update)
+
+
 # --- FastAPI App ---
 app = FastAPI()
 
 @app.post("/")
-async def webhook(request: Request) -> Response:
-    """Recebe update do Telegram via webhook."""
+async def webhook(request: Request, background_tasks: BackgroundTasks) -> Response:
+    """
+    Recebe update do Telegram e o processa em segundo plano para evitar o erro 'Event loop is closed'.
+    """
     try:
+        # A inicialização é feita uma vez por instância da função serverless
         if not ptb_app._initialized:
             await ptb_app.initialize()
+        
         data = await request.json()
         update = Update.de_json(data, ptb_app.bot)
-        await ptb_app.process_update(update)
+
+        # Adiciona o processamento pesado à fila de tarefas de segundo plano
+        background_tasks.add_task(process_update_task, update, ptb_app)
+        
+        # Retorna a resposta 200 OK imediatamente para o Telegram
         return Response(status_code=200)
     except Exception as e:
-        logger.exception("Erro ao processar update do Telegram")
+        logger.exception("Erro ao receber ou enfileirar update do Telegram")
         return Response(content=f"Erro interno: {e}", status_code=500)
 
 @app.get("/")
