@@ -80,7 +80,7 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             await handler_to_call(update, context)
         else:
             # Se nenhum handler for encontrado, exibe a mensagem de ajuda como fallback
-            await query.answer() # Adicionado aqui para o caso de fallback
+            await query.answer()
             logger.warning(f"Nenhum handler no roteador para: '{callback_data}'. Exibindo ajuda.")
             await ajuda(update, context)
 
@@ -90,4 +90,3 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             logger.error(f"Erro de BadRequest em '{callback_data}': {e}")
     except Exception as e:
         logger.error(f"Erro inesperado em '{callback_data}': {e}", exc_info=True)
-
