@@ -14,6 +14,31 @@ from config import CANAL_ID_2, ADMIN_USER_IDS
 
 logger = logging.getLogger(__name__)
 
+# --- Função Principal de Silenciamento (Reutilizável) ---
+
+async def _silence_user_core(chat_id: int, user_id: int, context: ContextTypes.DEFAULT_TYPE, duration_seconds: int) -> bool:
+    """
+    Função principal para silenciar um usuário.
+    'duration_seconds = 0' significa permanentemente (na prática, até ser desmutado).
+    Retorna True se bem-sucedido, False caso contrário.
+    """
+    try:
+        # Se a duração for 0, o bot silencia "para sempre" (na verdade, por um tempo muito longo que o Telegram interpreta como permanente)
+        # Caso contrário, calcula a data final.
+        until_date = datetime.now() + timedelta(seconds=duration_seconds) if duration_seconds > 0 else None
+        
+        await context.bot.restrict_chat_member(
+            chat_id=chat_id,
+            user_id=user_id,
+            permissions=ChatPermissions(can_send_messages=False),
+            until_date=until_date
+        )
+        logger.info(f"Usuário {user_id} silenciado no chat {chat_id} por {duration_seconds} segundos.")
+        return True
+    except (BadRequest, TelegramError) as e:
+        logger.error(f"Erro ao silenciar usuário {user_id} no chat {chat_id}: {e}")
+        return False
+
 # --- Decorators de Verificação ---
 
 def admin_required(func):
@@ -23,7 +48,6 @@ def admin_required(func):
     @wraps(func)
     async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
         user = update.effective_user
-        # Verifica se o ID do usuário está na lista de admins definida no config.py
         if not user or user.id not in ADMIN_USER_IDS:
             await update.message.reply_text("🚫 Acesso negado. Apenas administradores do bot podem usar este comando.")
             return
@@ -101,19 +125,12 @@ async def silenciar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         else:
             await update.message.reply_text("Formato de tempo inválido. Use 'm' para minutos, 'h' para horas, 'd' para dias (ex: 30m, 2h, 1d).")
             return
-
-    until_date = datetime.now() + duration
-    
-    try:
-        await context.bot.restrict_chat_member(
-            chat_id,
-            user_to_mute.id,
-            permissions=ChatPermissions(can_send_messages=False),
-            until_date=until_date
-        )
+            
+    # Chama a função principal com a lógica
+    if await _silence_user_core(chat_id, user_to_mute.id, context, int(duration.total_seconds())):
         await update.message.reply_text(f"🔇 O usuário {user_to_mute.mention_html()} foi silenciado por {str(duration).replace('0:', '', 1)}.", parse_mode=ParseMode.HTML)
-    except (BadRequest, TelegramError) as e:
-        await update.message.reply_text(f"⚠️ Erro ao silenciar: {e.message}")
+    else:
+        await update.message.reply_text(f"⚠️ Erro ao silenciar o usuário.")
 
 @admin_required
 @group_command
