@@ -1,5 +1,4 @@
 # NOME DO ARQUIVO: utils/verification.py
-# REFACTOR: Decorator e lógica para verificar se um usuário é membro do grupo.
 import logging
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -19,7 +18,6 @@ async def is_user_member(user_id: int, context: ContextTypes.DEFAULT_TYPE) -> bo
         return False
     try:
         chat_member = await context.bot.get_chat_member(chat_id=CANAL_ID_2, user_id=user_id)
-        # CORREÇÃO: Trocado ChatMemberStatus.CREATOR por ChatMemberStatus.OWNER
         return chat_member.status in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]
     except BadRequest:
         logger.info(f"Usuário {user_id} não encontrado no grupo {CANAL_ID_2}.")
@@ -36,10 +34,7 @@ def group_member_required(func):
         if not user: return
 
         if await is_user_member(user.id, context):
-            # Rastreia o uso do comando se o usuário for verificado
-            usage_tracker = context.bot_data.get('usage_tracker')
-            if usage_tracker and update.message and update.message.text and update.message.text.startswith('/'):
-                usage_tracker.increment_command_count(user.id)
+            # Lógica do tracker foi removida daqui
             return await func(update, context, *args, **kwargs)
         else:
             logger.warning(f"Acesso negado para o usuário {user.id} (não membro) ao handler {func.__name__}.")
@@ -51,4 +46,3 @@ def group_member_required(func):
                     parse_mode=ParseMode.MARKDOWN
                 )
     return wrapper
-

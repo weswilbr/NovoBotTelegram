@@ -1,3 +1,4 @@
+# NOME DO ARQUIVO: main.py
 # --- Importações Padrão e de Terceiros ---
 import logging
 import sys
@@ -28,7 +29,7 @@ from features.business.brochures import folheteria
 from features.business.glossary import glossario
 from features.products.handlers import beneficiosprodutos
 from features.business.marketing import marketing_rede
-from features.business.rewards import recompensas2024
+from features.business.rewards import recompensas
 from features.business.transfer_factors import fatorestransferencia
 from features.business.factory import fabrica4life
 from features.general.bonus_builder import bonus_construtor
@@ -40,14 +41,12 @@ from features.business.ranking import mostrar_ranking
 from features.community.channels import canais
 from features.community.loyalty import fidelidade
 from features.business.tables import tabelas_menu
+from features.user_tools.store_finder import loja_handler
 
 # --- Utilitários ---
 from utils.error_handler import error_handler
 from utils.get_file_id import get_file_id_handler
 from utils.get_group_id import setup_group_id_handler
-from utils.monitoring.commands import send_top_users_command, reset_usage_data_command
-from utils.monitoring.tracker import UsageTracker
-from utils.monitoring.decorators import track_command_usage
 
 # --- Logging ---
 logging.basicConfig(
@@ -63,25 +62,28 @@ if not BOT_TOKEN:
 
 # --- Construtor do Bot ---
 ptb_app = ApplicationBuilder().token(BOT_TOKEN).build()
-ptb_app.bot_data["usage_tracker"] = UsageTracker()
 
 # --- Registro dos Handlers ---
 # 1. Comandos de usuário
 command_handlers = {
     "start": start, "ajuda": ajuda, "produtos": beneficiosprodutos,
     "apresentacaooportunidade": apresentacaooportunidade, "folheteria": folheteria,
-    "glossario": glossario, "marketingrede": marketing_rede, "recompensas2024": recompensas2024,
+    "glossario": glossario, "marketingrede": marketing_rede, "recompensas": recompensas,
     "fatorestransferencia": fatorestransferencia, "fabrica4life": fabrica4life,
     "bonusconstrutor": bonus_construtor, "regras": mostrar_regras, "convite": mostrar_convites,
     "artes": artes, "treinamento": treinamento, "ranking": mostrar_ranking,
     "canais": canais, "fidelidade": fidelidade, "tabelas": tabelas_menu
 }
 for command, handler in command_handlers.items():
-    ptb_app.add_handler(CommandHandler(command, track_command_usage(handler)))
+    # Decorador de rastreamento removido
+    ptb_app.add_handler(CommandHandler(command, handler))
+
+# Adiciona o ConversationHandler para /minhaloja
+ptb_app.add_handler(loja_handler)
 
 # 2. Comandos de admin
 admin_command_handlers = {
-    "topusers": send_top_users_command, "resetusage": reset_usage_data_command,
+    # Comandos do tracker removidos
     "listaradmins": listar_admins, "silenciar": silenciar, "banir": banir,
     "desbanir": desbanir, "fixar": fixar, "desfixar": desfixar,
     "enviartextocanal": enviartextocanal

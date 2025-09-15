@@ -1,6 +1,4 @@
 # NOME DO ARQUIVO: core/handlers.py
-# REFACTOR: Roteador atualizado para usar o novo `products_callback_handler`.
-
 import logging
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -9,14 +7,13 @@ from telegram.error import BadRequest
 # --- Imports Corrigidos e Limpos ---
 from features.general.help_command import ajuda
 from features.general.bonus_builder import callback_bonus_construtor
-# LINHA CORRIGIDA ABAIXO: Importa a nova função do handler de produtos
 from features.products.handlers import products_callback_handler
 from features.business import (
-    planning, tables, marketing, factory,
+    tables, marketing, factory,
     transfer_factors, brochures, glossary, opportunity, ranking
 )
 from features.community import loyalty, invites, channels
-from features.training import training, reading_guide
+from features.training import training
 from features.creative import art_creator
 
 # Utilitários
@@ -25,14 +22,14 @@ from utils.verification import group_member_required
 
 logger = logging.getLogger(__name__)
 
-# Dicionário de roteamento limpo, com funcionalidades de produto centralizadas
+# Dicionário de roteamento simplificado
 CALLBACK_ROUTING = {
-    # Products (NOVO): Direciona todos os callbacks de produtos para o novo handler
+    # Products
     'products_': products_callback_handler,
     # General
     'bonusconstrutor_': callback_bonus_construtor,
     # Business
-    'planotrabalho90dias_': planning.callback_planificacao,
+    # Rota de 'planning' removida
     'tabela_': tables.callback_tabelas,
     'preco_': tables.callback_tabelas,
     'voltar_tabelas_principal': tables.callback_tabelas,
@@ -58,7 +55,7 @@ CALLBACK_ROUTING = {
     'voltar': training.handle_treinamento_callback,
     'apoio_': training.handle_treinamento_callback,
     'tutoriais_': training.handle_treinamento_callback,
-    'guia_exito_': reading_guide.callback_leitura,
+    # Rota de 'reading_guide' removida
     # Creative
     'arte_': art_creator.button_callback,
     'banner_': art_creator.button_callback,
@@ -97,4 +94,3 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             logger.error(f"Erro de BadRequest em '{callback_data}': {e}")
     except Exception as e:
         logger.error(f"Erro inesperado em '{callback_data}': {e}", exc_info=True)
-
