@@ -1,16 +1,10 @@
-# NOME DO ARQUIVO: main.py
-# REFACTOR: Versão final, removendo a funcionalidade de eventos.
-
 # --- Importações Padrão e de Terceiros ---
 import logging
 import sys
-import os
 from fastapi import FastAPI, Request, Response
-
-# --- Importações do Telegram ---
 from telegram import Update
 from telegram.ext import (
-    Application, ApplicationBuilder, CommandHandler, MessageHandler,
+    ApplicationBuilder, CommandHandler, MessageHandler,
     CallbackQueryHandler, filters
 )
 
@@ -18,7 +12,7 @@ from telegram.ext import (
 from config import BOT_TOKEN, CANAL_ID_2
 from core.handlers import callback_router
 
-# --- Handlers de Funcionalidades ---
+# --- Handlers ---
 from features.admin.commands import (
     listar_admins, silenciar, banir, desbanir, fixar, desfixar, enviartextocanal
 )
@@ -46,10 +40,8 @@ from features.business.ranking import mostrar_ranking
 from features.community.channels import canais
 from features.community.loyalty import fidelidade
 from features.business.tables import tabelas_menu
-# A LINHA ABAIXO FOI REMOVIDA
-# from features.community.events import escolher_local_evento
 
-# --- Utilitários e Monitoramento ---
+# --- Utilitários ---
 from utils.error_handler import error_handler
 from utils.get_file_id import get_file_id_handler
 from utils.get_group_id import setup_group_id_handler
@@ -57,41 +49,37 @@ from utils.monitoring.commands import send_top_users_command, reset_usage_data_c
 from utils.monitoring.tracker import UsageTracker
 from utils.monitoring.decorators import track_command_usage
 
-# --- Configuração do Logging ---
+# --- Logging ---
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# --- Validações Iniciais ---
+# --- Validação Inicial ---
 if not BOT_TOKEN:
     logger.critical("CRÍTICO: BOT_TOKEN não foi encontrado.")
     sys.exit(1)
 
-# --- Construtor da Aplicação do Bot (Escopo Global) ---
+# --- Construtor do Bot ---
 ptb_app = ApplicationBuilder().token(BOT_TOKEN).build()
-ptb_app.bot_data['usage_tracker'] = UsageTracker()
+ptb_app.bot_data["usage_tracker"] = UsageTracker()
 
-
-# --- Registro de Handlers na Aplicação ---
-
-# 1. Comandos de usuário com rastreamento automático
+# --- Registro dos Handlers ---
+# 1. Comandos de usuário
 command_handlers = {
     "start": start, "ajuda": ajuda, "produtos": beneficiosprodutos,
     "apresentacaooportunidade": apresentacaooportunidade, "folheteria": folheteria,
     "glossario": glossario, "marketingrede": marketing_rede, "recompensas2024": recompensas2024,
     "fatorestransferencia": fatorestransferencia, "fabrica4life": fabrica4life,
     "bonusconstrutor": bonus_construtor, "regras": mostrar_regras, "convite": mostrar_convites,
-    "artes": artes, "treinamento": treinamento, "ranking": mostrar_ranking, "canais": canais,
-    "fidelidade": fidelidade, "tabelas": tabelas_menu,
-    # A LINHA ABAIXO FOI REMOVIDA
-    # "eventos": escolher_local_evento,
+    "artes": artes, "treinamento": treinamento, "ranking": mostrar_ranking,
+    "canais": canais, "fidelidade": fidelidade, "tabelas": tabelas_menu
 }
 for command, handler in command_handlers.items():
     ptb_app.add_handler(CommandHandler(command, track_command_usage(handler)))
 
-# 2. Comandos de admin (sem rastreamento)
+# 2. Comandos de admin
 admin_command_handlers = {
     "topusers": send_top_users_command, "resetusage": reset_usage_data_command,
     "listaradmins": listar_admins, "silenciar": silenciar, "banir": banir,
@@ -101,29 +89,35 @@ admin_command_handlers = {
 for command, handler in admin_command_handlers.items():
     ptb_app.add_handler(CommandHandler(command, handler))
 
-# 3. Handlers de Callback e Mensagens
-ptb_app.add_handler(CallbackQueryHandler(welcome_callbacks_handler, pattern=f'^({CALLBACK_REGRAS}|{CALLBACK_INICIO}|{CALLBACK_MENU}|ajuda_.*)$'))
-ptb_app.add_handler(CallbackQueryHandler(handle_verification_callback, pattern=f'^{VERIFY_MEMBER_CALLBACK}$'))
+# 3. Callbacks e mensagens
+ptb_app.add_handler(CallbackQueryHandler(
+    welcome_callbacks_handler,
+    pattern=f"^({CALLBACK_REGRAS}|{CALLBACK_INICIO}|{CALLBACK_MENU}|ajuda_.*)$"
+))
+ptb_app.add_handler(CallbackQueryHandler(handle_verification_callback, pattern=f"^{VERIFY_MEMBER_CALLBACK}$"))
 ptb_app.add_handler(CallbackQueryHandler(callback_router))
 ptb_app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, darboasvindas_handler))
 ptb_app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE & ~filters.COMMAND, handle_private_message))
 if CANAL_ID_2:
-    ptb_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & filters.Chat(chat_id=int(CANAL_ID_2)), handle_unverified_text_message))
+    ptb_app.add_handler(MessageHandler(
+        filters.TEXT & ~filters.COMMAND & filters.Chat(chat_id=int(CANAL_ID_2)),
+        handle_unverified_text_message
+    ))
 
-# 4. Handlers Utilitários
+# 4. Utilitários
 ptb_app.add_handler(get_file_id_handler())
 ptb_app.add_handler(setup_group_id_handler())
 ptb_app.add_error_handler(error_handler)
 
-
-# --- Servidor FastAPI (ASGI) para a Vercel ---
+# --- FastAPI App ---
 app = FastAPI()
 
 @app.post("/")
 async def webhook(request: Request) -> Response:
-    """Recebe o update do Telegram e o processa."""
+    """Recebe update do Telegram via webhook."""
     try:
-        await ptb_app.initialize()
+        if not ptb_app._initialized:
+            await ptb_app.initialize()
         data = await request.json()
         update = Update.de_json(data, ptb_app.bot)
         await ptb_app.process_update(update)
@@ -131,11 +125,8 @@ async def webhook(request: Request) -> Response:
     except Exception as e:
         logger.exception("Erro ao processar update do Telegram")
         return Response(content=f"Erro interno: {e}", status_code=500)
-    finally:
-        await ptb_app.shutdown()
 
 @app.get("/")
 async def healthcheck():
-    """Endpoint de healthcheck para a Vercel."""
+    """Healthcheck endpoint."""
     return {"status": "ok", "message": "Bot está rodando e pronto para receber webhooks"}
-# Forçando a atualização de todos os módulos - 14/09/2025
