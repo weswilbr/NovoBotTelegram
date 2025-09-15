@@ -4,9 +4,8 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.constants import ChatType, ParseMode
-
-# LINHA CORRIGIDA ABAIXO
-from utils.verification import group_member_required
+# ❌ pode remover essa linha se não for usar restrição:
+# from utils.verification import group_member_required
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Envia uma mensagem de boas-vindas."""
@@ -22,7 +21,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     
     await update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
 
-@group_member_required
+# ❌ Remover o decorator
 async def ajuda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Exibe o menu de ajuda completo e final."""
     mensagem_ajuda = (
@@ -30,7 +29,6 @@ async def ajuda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "Explore as diversas funcionalidades do bot!\n\n"
         "🚀 *Negócios & Treinamentos:*\n"
         "   • /marketingrede - Saiba mais sobre Marketing de Rede\n"
-        # A LINHA ABAIXO FOI ALTERADA
         "   • /recompensas - Conheça o Plano de Recompensas\n"
         "   • /bonusconstrutor - Entenda o Bônus Construtor\n\n"
         "💰 *Produtos & Benefícios:*\n"
@@ -53,4 +51,3 @@ async def ajuda(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.callback_query.edit_message_text(mensagem_ajuda, parse_mode='Markdown')
     else:
         await update.message.reply_text(mensagem_ajuda, parse_mode='Markdown')
-
