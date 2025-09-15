@@ -4,7 +4,8 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 import logging
 from utils.anti_flood import command_rate_limit
-from features.products.data import MEDIA
+# CORREÇÃO 1: Importar MEDIA_GERAL em vez de MEDIA
+from features.products.data import MEDIA_GERAL
 
 logger = logging.getLogger(__name__)
 
@@ -36,15 +37,16 @@ async def callback_bonus_construtor(update: Update, context: ContextTypes.DEFAUL
     chat_id = query.message.chat_id
     
     try:
+        # CORREÇÃO 2: Usar a variável MEDIA_GERAL em vez de MEDIA
         if query.data == 'bonusconstrutor_video1':
-            video_id = MEDIA.get('bonusconstrutormidias', {}).get('video1')
+            video_id = MEDIA_GERAL.get('bonusconstrutormidias', {}).get('video1')
             if video_id:
                 await context.bot.send_video(chat_id=chat_id, video=video_id)
             else:
                 await query.message.reply_text("⚠️ Vídeo não encontrado.")
 
         elif query.data == 'bonusconstrutor_documento':
-            documento_id = MEDIA.get('bonusconstrutormidias', {}).get('documento')
+            documento_id = MEDIA_GERAL.get('bonusconstrutormidias', {}).get('documento')
             if documento_id:
                 await context.bot.send_document(chat_id=chat_id, document=documento_id)
             else:
