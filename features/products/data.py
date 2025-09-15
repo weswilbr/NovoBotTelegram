@@ -12,7 +12,7 @@ MEDIA = {
     # --- Mídias Gerais (não são produtos do menu) ---
     'bonusconstrutormidias': {
         'video1': 'BAACAgEAAxkBAAJAU2fGAtnueBNRnb1LCqFFFfHG35OYAAJcBQACS1kxRuel2nL4TjefNgQ',
-        'documento': 'BQACAgEAAxkBAAJAVWfGBGDBfHcAAXBT7LRKfZTnTKNG7QACYAUAAktZMUbZVJlfL5F_9jYE'
+        'documento': 'BAACAgEAAxkBAAJAVWfGBGDBfHcAAXBT7LRKfZTnTKNG7QACYAUAAktZMUbZVJlfL5F_9jYE'
     },
     'fatorestransf': {
         'video1': {'type': 'video', 'id': 'BAACAgEAAxkBAAJJMGfqtNj0QxKXG4FOpQS95NmJXcupAAJKBgAC-9pZR5ORbjj6QwSVNgQ'},
@@ -34,7 +34,7 @@ MEDIA = {
     },
     'planotrabalho90dias': {
         'pdf': 'BQACAgEAAxkBAANXZuXtZG2ZHLUjyXFzvmpc32A0m28AAvQDAAKYvDBHeMndEw69BD02BA',
-        'ppt': 'BQACAgEAAxkBAAIDa2bpX_0PhR7Iq9vZNaUmfRLxv4pjAALJBAACNzRIR5jQpmV2G0XjNgQ'
+        'ppt': 'BAACAgEAAxkBAAIDa2bpX_0PhR7Iq9vZNaUmfRLxv4pjAALJBAACNzRIR5jQpmV2G0XjNgQ'
     },
     'marketing_rede': {
         "video": "BAACAgEAAxkBAAIxpmc46CYHNY8qufZwAXQXw7z7eAspAAL2BAAChl_IRf-DsXQNjmvONgQ"
@@ -431,7 +431,7 @@ CONVITES_TEXT = {
     'convite_3': "🌍 Convite Flexível\n\nOlá, [Nome do Convidado]. Vi que você busca novas oportunidades com flexibilidade. Estou a desenvolver um negócio que permite trabalhar de qualquer lugar e com horários flexíveis. Se tiver interesse em saber mais, me diga qual o melhor horário para uma breve chamada.",
     'convite_4': "💵 Convite de Renda Extra\n\nOi, [Nome do Convidado]! Você já pensou em ter uma fonte de renda extra que não atrapalhe sua atividade principal? Encontrei uma forma inteligente de fazer isso e gostaria de compartilhar consigo. Tem um momento para conversarmos sobre?",
     'convite_14': "🎁 Convite de Oportunidade\n\nOlá, [Nome do Convidado]. Sinto que você é uma pessoa que está sempre aberta a novas oportunidades. Tenho algo em mãos que pode ser exatamente o que você procura para o seu futuro. Gostaria de saber mais?",
-    'convite_15': "💡 Convite de Solução\n\nOi, [Nome do Convidado]. Muitas pessoas estão a procurar soluções para [mencionar um problema, ex: ter mais tempo, mais segurança financeira]. Estou a trabalhar com uma solução que tem ajudado muita gente nessa área. Se isto faz sentido para si, vamos conversar."
+    'convise_15': "💡 Convite de Solução\n\nOi, [Nome do Convidado]. Muitas pessoas estão a procurar soluções para [mencionar um problema, ex: ter mais tempo, mais segurança financeira]. Estou a trabalhar com uma solução que tem ajudado muita gente nessa área. Se isto faz sentido para si, vamos conversar."
 }
 
 GLOSSARIO_TERMS = {
