@@ -1,0 +1,33 @@
+# NOME DO ARQUIVO: data/general_media.yml
+# Este arquivo centraliza os file_ids de mídias que não são
+# de produtos específicos do menu, como materiais de apoio,
+# catálogos e vídeos institucionais.
+
+bonusconstrutormidias:
+  video1: 'BAACAgEAAxkBAAJAU2fGAtnueBNRnb1LCqFFFfHG35OYAAJcBQACS1kxRuel2nL4TjefNgQ'
+  documento: 'BAACAgEAAxkBAAJAVWfGBGDBfHcAAXBT7LRKfZTnTKNG7QACYAUAAktZMUbZVJlfL5F_9jYE'
+
+fatorestransf:
+  video1: 'BAACAgEAAxkBAAJJMGfqtNj0QxKXG4FOpQS95NmJXcupAAJKBgAC-9pZR5ORbjj6QwSVNgQ'
+  video2: 'BAACAgEAAxkBAAJB8WfOAhRPVUK8u9LxuB-BSIXDPfTKAALSBAACynwwRMxkekB46LmzNgQ'
+  table: 'BQACAgEAAxkBAAIw6Gc4xcpWr6KivsAiGUwOpwcID0wxAALjBAAChl_IRdQoqw0PYFCgNgQ'
+
+fabrica4life:
+  armazem: 'BAACAgEAAxkBAAIBMGbncmJda7Sz-CPPc4unHFYjinjdAAK6CwACz0RBR_6nHEgo0YTmNgQ'
+  envase: 'BAACAgEAAxkBAAIBMmbndcrrkMOWppQGRixAh_CbE4oeAAK7CwACz0RBRypfMI6d_CjQNgQ'
+
+folheteria:
+  panfletoprodutosnovo: 'BQACAgEAAxkBAAIhW2cdTj5i9HqUKjzciT-waYnZUIj0AAIOBQACw_vpRCemtnyqP0xmNgQ'
+
+catalogoprodutos:
+  documento: 'BQACAgEAAxkBAAIxj2c45EdaH76knO_Xm1drcy3S4uqGAAL0BAAChl_IRZzzUO7vIgo4NgQ'
+
+recompensas2024:
+  documento: 'BQACAgEAAxkBAANJZuXs2N0BGNgYFLeOGs0btJjgYkEAAvEDAAKYvDBHHRLaoQgyoHU2BA'
+
+planotrabalho90dias:
+  pdf: 'BQACAgEAAxkBAANXZuXtZG2ZHLUjyXFzvmpc32A0m28AAvQDAAKYvDBHeMndEw69BD02BA'
+  ppt: 'BAACAgEAAxkBAAIDa2bpX_0PhR7Iq9vZNaUmfRLxv4pjAALJBAACNzRIR5jQpmV2G0XjNgQ'
+
+marketing_rede:
+  video: "BAACAgEAAxkBAAIxpmc46CYHNY8qufZwAXQXw7z7eAspAAL2BAAChl_IRf-DsXQNjmvONgQ"
