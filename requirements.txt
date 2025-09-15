@@ -1,9 +1,0 @@
-fastapi==0.104.1
-uvicorn==0.23.2
-python-telegram-bot==20.8
-httpx==0.26.0   # (ou remover essa linha)
-redis==5.0.1
-psycopg2-binary
-fpdf2
-Pillow
-python-dotenv==1.0.0
