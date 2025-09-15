@@ -28,7 +28,8 @@ CALLBACK_ROUTING = {
     'tabela_': tables.callback_tabelas,
     'preco_': tables.callback_tabelas,
     'voltar_tabelas_principal': tables.callback_tabelas,
-    'baixar_video_marketing': marketing.handle_download_callback,
+    # CORREÇÃO: A função de callback foi renomeada para maior clareza e para resolver o erro.
+    'baixar_video_marketing': marketing.callback_marketing_download,
     'fabrica_': factory.callback_fabrica4life,
     'fatorestransf_': transfer_factors.callback_fatorestransf_handler,
     'folheteria_': brochures.callback_folheteria,
