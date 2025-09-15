@@ -46,10 +46,14 @@ def _get_individual_products_submenu() -> InlineKeyboardMarkup:
 def _get_product_options_menu(product_key: str) -> InlineKeyboardMarkup:
     product_data = MEDIA.get('produtos', {}).get(product_key, {})
     buttons = []
-    if product_data.get('foto'): buttons.append(InlineKeyboardButton("📷 Ver Foto", callback_data=f"products_send_{product_key}_foto"))
-    if product_data.get('video'): buttons.append(InlineKeyboardButton("🎥 Ver Vídeo", callback_data=f"products_send_{product_key}_video"))
-    if product_data.get('documento'): buttons.append(InlineKeyboardButton("📄 Ver Documento", callback_data=f"products_send_{product_key}_documento"))
-    if PITCH_DE_VENDA_TEXT.get(product_key): buttons.append(InlineKeyboardButton("📝 Pitch de Venda", callback_data=f"products_pitch_{product_key}"))
+    if product_data.get('foto'):
+        buttons.append(InlineKeyboardButton("📷 Ver Foto", callback_data=f"products_send_{product_key}_foto"))
+    if product_data.get('video'):
+        buttons.append(InlineKeyboardButton("🎥 Ver Vídeo", callback_data=f"products_send_{product_key}_video"))
+    if product_data.get('documento'):
+        buttons.append(InlineKeyboardButton("📄 Ver Documento", callback_data=f"products_send_{product_key}_documento"))
+    if PITCH_DE_VENDA_TEXT.get(product_key):
+        buttons.append(InlineKeyboardButton("📝 Pitch de Venda", callback_data=f"products_pitch_{product_key}"))
     if product_data.get('social_kit'):
         buttons.append(InlineKeyboardButton("📲 Kit de Mídia Social", callback_data=f"products_social_{product_key}"))
     keyboard = [buttons[i:i + 2] for i in range(0, len(buttons), 2)]
@@ -59,12 +63,16 @@ def _get_product_options_menu(product_key: str) -> InlineKeyboardMarkup:
 def _get_social_kit_menu(product_key: str) -> InlineKeyboardMarkup:
     kit_data = MEDIA.get('produtos', {}).get(product_key, {}).get('social_kit', {})
     buttons = []
-    if kit_data.get('copy_text'): buttons.append(InlineKeyboardButton("📝 Texto p/ Post", callback_data=f"products_social_send_text_{product_key}"))
-    if kit_data.get('story_image'): buttons.append(InlineKeyboardButton("🖼️ Imagem p/ Stories", callback_data=f"products_social_send_story_{product_key}"))
-    if kit_data.get('feed_image'): buttons.append(InlineKeyboardButton("🏞️ Imagem p/ Feed", callback_data=f"products_social_send_feed_{product_key}"))
-    if kit_data.get('reels_video'): buttons.append(InlineKeyboardButton("🎬 Vídeo p/ Reels", callback_data=f"products_social_send_reels_{product_key}"))
-    if kit_data.get('hashtags'): buttons.append(InlineKeyboardButton("#️⃣ Hashtags", callback_data=f"products_social_send_tags_{product_key}"))
-    
+    if kit_data.get('copy_text'):
+        buttons.append(InlineKeyboardButton("📝 Texto p/ Post", callback_data=f"products_social_send_text_{product_key}"))
+    if kit_data.get('story_image'):
+        buttons.append(InlineKeyboardButton("🖼️ Imagem p/ Stories", callback_data=f"products_social_send_story_{product_key}"))
+    if kit_data.get('feed_image'):
+        buttons.append(InlineKeyboardButton("🏞️ Imagem p/ Feed", callback_data=f"products_social_send_feed_{product_key}"))
+    if kit_data.get('reels_video'):
+        buttons.append(InlineKeyboardButton("🎬 Vídeo p/ Reels", callback_data=f"products_social_send_reels_{product_key}"))
+    if kit_data.get('hashtags'):
+        buttons.append(InlineKeyboardButton("#️⃣ Hashtags", callback_data=f"products_social_send_tags_{product_key}"))
     keyboard = [buttons[i:i + 2] for i in range(0, len(buttons), 2)]
     keyboard.append([InlineKeyboardButton(f"🔙 Voltar para o Produto", callback_data=f"products_show_{product_key}")])
     return InlineKeyboardMarkup(keyboard)
@@ -99,7 +107,7 @@ async def _show_product_options(query, parts: list, **kwargs) -> None:
 
 async def _send_media_and_cleanup(query, context: ContextTypes.DEFAULT_TYPE, sender_callable, file_id: str, media_type: str) -> None:
     try:
-        await sender_callable(chat_id=query.message.chat_id, **{media_type: file_id})
+        await sender_callable(chat_id=query.message.chat.id, **{media_type: file_id})
         await query.edit_message_text(f"✅ Material enviado!\n\nUse /produtos para voltar ao menu.", reply_markup=None)
     except (TelegramError, KeyError) as e:
         logger.error(f"Erro ao enviar {media_type} com ID {file_id}: {e}")
@@ -108,11 +116,9 @@ async def _send_media_and_cleanup(query, context: ContextTypes.DEFAULT_TYPE, sen
 async def _send_product_file(query, context: ContextTypes.DEFAULT_TYPE, parts: list, **kwargs) -> None:
     product_key, file_type = parts[2], parts[3]
     file_id = MEDIA.get('produtos', {}).get(product_key, {}).get(file_type)
-    
     if not file_id:
         await query.answer("⚠️ Mídia não encontrada.", show_alert=True)
         return
-
     sender_map = {'foto': context.bot.send_photo, 'video': context.bot.send_video, 'documento': context.bot.send_document}
     await _send_media_and_cleanup(query, context, sender_map[file_type], file_id, file_type)
 
@@ -122,7 +128,8 @@ async def _send_sales_pitch(query, context: ContextTypes.DEFAULT_TYPE, parts: li
     if not pitch_text:
         await query.answer("⚠️ Pitch de venda não encontrado.", show_alert=True)
         return
-    await _send_media_and_cleanup(query, context, query.message.reply_text, pitch_text, "text")
+    await query.message.reply_text(pitch_text, parse_mode=ParseMode.MARKDOWN)
+    await query.answer("✅ Pitch enviado!")
 
 async def _show_social_kit_menu(query, parts: list, **kwargs) -> None:
     product_key = parts[2]
@@ -134,7 +141,6 @@ async def _show_social_kit_menu(query, parts: list, **kwargs) -> None:
 async def _send_social_kit_asset(query, context: ContextTypes.DEFAULT_TYPE, parts: list, **kwargs):
     product_key, asset_type = parts[4], parts[3]
     kit_data = MEDIA.get('produtos', {}).get(product_key, {}).get('social_kit', {})
-    
     asset_map = {
         'text': {'key': 'copy_text', 'sender': query.message.reply_text, 'param': 'text'},
         'story': {'key': 'story_image', 'sender': context.bot.send_photo, 'param': 'photo'},
@@ -142,22 +148,25 @@ async def _send_social_kit_asset(query, context: ContextTypes.DEFAULT_TYPE, part
         'reels': {'key': 'reels_video', 'sender': context.bot.send_video, 'param': 'video'},
         'tags': {'key': 'hashtags', 'sender': query.message.reply_text, 'param': 'text'}
     }
-    
     asset_info = asset_map.get(asset_type)
     content = kit_data.get(asset_info['key']) if asset_info else None
-    
     if not content:
         await query.answer("⚠️ Ferramenta não disponível.", show_alert=True)
         return
-        
     try:
         if 'reply_text' in str(asset_info['sender']):
-             caption_map = {'text': '👇 *Texto para copiar e colar:*\n\n`{}`', 'tags': '👇 *Hashtags para copiar e colar:*\n\n`{}`'}
-             await asset_info['sender'](caption_map[asset_type].format(content), parse_mode=ParseMode.MARKDOWN)
+            caption_map = {
+                'text': '👇 *Texto para copiar e colar:*\n\n`{}`',
+                'tags': '👇 *Hashtags para copiar e colar:*\n\n`{}`'
+            }
+            await asset_info['sender'](caption_map[asset_type].format(content), parse_mode=ParseMode.MARKDOWN)
         else:
-             caption_map = {'story': '✅ Imagem para Stories pronta!', 'feed': '✅ Imagem para Feed pronta!', 'reels': '✅ Vídeo para Reels pronto!'}
-             await asset_info['sender'](chat_id=query.message.chat_id, **{asset_info['param']: content, 'caption': caption_map[asset_type]})
-        
+            caption_map = {
+                'story': '✅ Imagem para Stories pronta!',
+                'feed': '✅ Imagem para Feed pronta!',
+                'reels': '✅ Vídeo para Reels pronto!'
+            }
+            await asset_info['sender'](chat_id=query.message.chat.id, **{asset_info['param']: content, 'caption': caption_map[asset_type]})
         await query.answer("✅ Ferramenta enviada!")
     except Exception as e:
         logger.error(f"Erro ao enviar ativo social '{asset_type}' para '{product_key}': {e}")
@@ -184,9 +193,10 @@ async def products_callback_handler(update: Update, context: ContextTypes.DEFAUL
     query = update.callback_query
     if not (query and query.data):
         return
-        
-    await query.answer()
-    
+    try:
+        await query.answer()
+    except Exception:
+        pass  # garante que o erro não quebre a execução
     action_map = {
         'main': _show_main_menu,
         'submenu': _show_individual_products_submenu,
@@ -195,16 +205,13 @@ async def products_callback_handler(update: Update, context: ContextTypes.DEFAUL
         'pitch': _send_sales_pitch,
         'social': _handle_social_actions
     }
-    
     try:
         parts = query.data.split('_')
         action = parts[1]
         handler = action_map.get(action)
-        
         if handler:
             await handler(query=query, context=context, parts=parts)
         else:
             raise ValueError(f"Ação desconhecida: {action}")
-            
     except Exception as e:
         await _handle_error(query, query.data, e)
