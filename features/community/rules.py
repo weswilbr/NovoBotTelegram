@@ -4,7 +4,6 @@ import logging
 from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.error import BadRequest
-from utils.verification import group_member_required
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +19,6 @@ TEXTO_REGRAS = (
     "🙏 Obrigado por fazer parte da nossa comunidade! 🙌"
 )
 
-@group_member_required
 async def mostrar_regras(update: Update, context: ContextTypes.DEFAULT_TYPE, edit_message: bool = False) -> bool:
     """
     Exibe as regras do grupo, editando a mensagem se solicitado.
