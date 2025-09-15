@@ -28,7 +28,6 @@ CALLBACK_ROUTING = {
     'tabela_': tables.callback_tabelas,
     'preco_': tables.callback_tabelas,
     'voltar_tabelas_principal': tables.callback_tabelas,
-    # CORREÇÃO: A função de callback foi renomeada para maior clareza e para resolver o erro.
     'baixar_video_marketing': marketing.callback_marketing_download,
     'fabrica_': factory.callback_fabrica4life,
     'fatorestransf_': transfer_factors.callback_fatorestransf_handler,
@@ -66,7 +65,10 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     if not await check_flood(update):
         return
 
-    await query.answer()
+    # CORREÇÃO: A linha 'await query.answer()' foi REMOVIDA daqui.
+    # Cada handler específico (como 'products_callback_handler') agora é responsável
+    # por chamar 'await query.answer()' por conta própria.
+    
     callback_data = query.data
     logger.info(f"Callback roteado: '{callback_data}'")
 
@@ -82,6 +84,7 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             await handler_to_call(update, context)
         else:
             # Se nenhum handler for encontrado, exibe a mensagem de ajuda como fallback
+            await query.answer() # Adicionado aqui para o caso de fallback
             logger.warning(f"Nenhum handler no roteador para: '{callback_data}'. Exibindo ajuda.")
             await ajuda(update, context)
 
@@ -91,3 +94,4 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             logger.error(f"Erro de BadRequest em '{callback_data}': {e}")
     except Exception as e:
         logger.error(f"Erro inesperado em '{callback_data}': {e}", exc_info=True)
+
