@@ -4,17 +4,17 @@
 import time
 import logging
 from functools import wraps
-from typing import Callable, Any, Awaitable, Dict
+from typing import Callable, Awaitable, Any, Dict
 
 from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.error import TelegramError
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)           # evita Warnings na Vercel
+logger.setLevel(logging.INFO)
 
 # --------------------------------------------------------------------------- #
-# Tabelas em memória (id_usuario -> timestamp)
+# Estruturas em memória
 # --------------------------------------------------------------------------- #
 _user_last_cmd: Dict[int, float] = {}
 _user_last_click: Dict[int, float] = {}
@@ -24,35 +24,53 @@ DEFAULT_CLICK_LIMIT = 2   # segundos
 
 
 # --------------------------------------------------------------------------- #
-# Decorator para comandos (/start, /produtos…)
+# Decorator para comandos (/start, /produtos, etc.)
+# Funciona com ou sem parênteses:
+#   @command_rate_limit
+#   @command_rate_limit()
+#   @command_rate_limit(5)
 # --------------------------------------------------------------------------- #
-def command_rate_limit(seconds: int = DEFAULT_CMD_LIMIT) -> Callable:
+def command_rate_limit(
+    arg: Any = None, *, seconds: int = DEFAULT_CMD_LIMIT
+) -> Callable:                                         # type: ignore
     """
-    Exemplo:
-        @command_rate_limit()          # 3 s (default)
-        async def start(...):
-
-        @command_rate_limit(5)         # 5 s
-        async def outro(...):
+    Decorator antiflood para comandos de texto.
+    Uso:
+        @command_rate_limit              # 3s
+        @command_rate_limit()            # 3s (idem)
+        @command_rate_limit(5)           # 5s
+        @command_rate_limit(seconds=10)  # 10s
     """
-    def decorator(func: Callable[..., Awaitable[Any]]) -> Callable[..., Awaitable[Any]]:
-        @wraps(func)
-        async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
-            if not update.effective_user:
-                return
-            uid = update.effective_user.id
-            now = time.monotonic()
+    # Caso seja usado sem (), o primeiro argumento é a função decorada
+    if callable(arg) and not isinstance(arg, (int, float)):
+        func = arg
+        return _wrap_command(func, seconds)
 
-            last = _user_last_cmd.get(uid, 0)
-            if now - last < seconds:
-                logger.info("[anti_flood] comando de %s bloqueado (%ss)", uid, seconds)
-                return
+    # Caso contrário, devolvemos um decorator esperando a função
+    def real_decorator(func: Callable[..., Awaitable[Any]]) -> Callable[..., Awaitable[Any]]:
+        return _wrap_command(func, seconds)
 
-            _user_last_cmd[uid] = now
-            return await func(update, context, *args, **kwargs)
+    return real_decorator
 
-        return wrapper
-    return decorator
+
+def _wrap_command(func: Callable[..., Awaitable[Any]], seconds: int):
+    @wraps(func)
+    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
+        if not update.effective_user:
+            return
+
+        uid = update.effective_user.id
+        now = time.monotonic()
+        last = _user_last_cmd.get(uid, 0)
+
+        if now - last < seconds:
+            logger.info("[anti_flood] comando de %s bloqueado (%ss)", uid, seconds)
+            return
+
+        _user_last_cmd[uid] = now
+        return await func(update, context, *args, **kwargs)
+
+    return wrapper
 
 
 # --------------------------------------------------------------------------- #
@@ -72,8 +90,8 @@ async def check_flood(update: Update, seconds: int = DEFAULT_CLICK_LIMIT) -> boo
 
     uid = update.effective_user.id
     now = time.monotonic()
-
     last = _user_last_click.get(uid, 0)
+
     if now - last < seconds:
         remaining = int(seconds - (now - last))
         try:
