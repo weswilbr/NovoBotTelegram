@@ -3,7 +3,6 @@
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from utils.verification import group_member_required
 from features.products.data import MEDIA
 
 logger = logging.getLogger(__name__)
@@ -33,7 +32,10 @@ async def callback_tabelas(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if action == "tabela_precos":
          await query.edit_message_text("Submenu de preços.")
     elif action == "tabela_pontos":
-        file_id = MEDIA['tabelas_gerais']['tabelapontos']
-        await context.bot.send_photo(chat_id=query.message.chat.id, photo=file_id)
+        # Exemplo: É necessário que 'tabelas_gerais' e 'tabelapontos' existam no seu data.py
+        file_id = MEDIA.get('tabelas_gerais', {}).get('tabelapontos')
+        if file_id:
+            await context.bot.send_photo(chat_id=query.message.chat.id, photo=file_id)
+        else:
+            await query.message.reply_text("⚠️ Arquivo da tabela de pontos não encontrado.")
     # ... etc
-
