@@ -1,56 +1,71 @@
 # NOME DO ARQUIVO: features/general/bonus_builder.py
-# REFACTOR: Gerencia o comando e os callbacks para o Bônus Construtor.
+# Construtor de bônus (menu interativo)
+
+import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-import logging
-from utils.anti_flood import command_rate_limit
-# CORREÇÃO 1: Importar MEDIA_GERAL em vez de MEDIA
+
 from features.products.data import MEDIA_GERAL
 
 logger = logging.getLogger(__name__)
 
-@command_rate_limit
+# ------------------------------------------------------------------- #
+# Função de callback (exibida no menu principal)
+# ------------------------------------------------------------------- #
 async def bonus_construtor(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Exibe as opções para o Bônus Construtor."""
+    """Comando /bonusconstrutor – mostra quadro de bônus e botões."""
     if not update.message:
         return
 
-    keyboard = [
-        [InlineKeyboardButton("🎥 Video Bônus Construtor", callback_data='bonusconstrutor_video1')],
-        [InlineKeyboardButton("📄 Ler Guia Bônus Construtor", callback_data='bonusconstrutor_documento')],
-        [InlineKeyboardButton("▶️ Assistir no Youtube", url='https://youtu.be/iyMiw0VpQ0Q')]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
-        'Escolha uma opção para saber mais sobre o Bônus Construtor:',
-        reply_markup=reply_markup
+        "🔢 *Construtor de Bônus*\n\n"
+        "Escolha uma opção abaixo:",
+        parse_mode='Markdown',
+        reply_markup=_main_keyboard()
     )
 
+# ------------------------------------------------------------------- #
+# Callback router para botões do construtor
+# ------------------------------------------------------------------- #
 async def callback_bonus_construtor(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Lida com os callbacks do menu do Bônus Construtor."""
     query = update.callback_query
-    if not (query and query.message and context.bot):
-        if query: await query.answer("Erro: A mensagem original não está mais acessível.")
+    if not (query and query.data):
         return
 
-    await query.answer()
-    chat_id = query.message.chat_id
-    
-    try:
-        # CORREÇÃO 2: Usar a variável MEDIA_GERAL em vez de MEDIA
-        if query.data == 'bonusconstrutor_video1':
-            video_id = MEDIA_GERAL.get('bonusconstrutormidias', {}).get('video1')
-            if video_id:
-                await context.bot.send_video(chat_id=chat_id, video=video_id)
-            else:
-                await query.message.reply_text("⚠️ Vídeo não encontrado.")
+    data = query.data
+    if data == "bonus_pdf":
+        await _send_pdf(update, context)
+    elif data == "bonus_video":
+        await _send_video(update, context)
 
-        elif query.data == 'bonusconstrutor_documento':
-            documento_id = MEDIA_GERAL.get('bonusconstrutormidias', {}).get('documento')
-            if documento_id:
-                await context.bot.send_document(chat_id=chat_id, document=documento_id)
-            else:
-                await query.message.reply_text("⚠️ Documento não encontrado.")
-    except Exception as e:
-        logger.error(f"Erro ao processar callback {query.data}: {e}", exc_info=True)
-        await context.bot.send_message(chat_id=chat_id, text="⚠️ Ocorreu um erro ao processar sua solicitação.")
+# ------------------------------------------------------------------- #
+# Helpers
+# ------------------------------------------------------------------- #
+def _main_keyboard() -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton("📄 PDF", callback_data="bonus_pdf"),
+            InlineKeyboardButton("🎬 Vídeo", callback_data="bonus_video"),
+        ]
+    ]
+    return InlineKeyboardMarkup(buttons)
+
+async def _send_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    file_id = MEDIA_GERAL.get("bonusconstrutormidias", {}).get("documento")
+    if file_id:
+        await context.bot.send_document(query.message.chat_id, file_id)
+    else:
+        await query.message.reply_text("⚠️ PDF não encontrado.")
+
+async def _send_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    video_id = MEDIA_GERAL.get("bonusconstrutormidias", {}).get("video1")
+    if video_id:
+        await context.bot.send_video(query.message.chat_id, video_id)
+    else:
+        await query.message.reply_text("⚠️ Vídeo não encontrado.")
