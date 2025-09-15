@@ -30,7 +30,7 @@ MEDIA = {
         'documento': 'BQACAgEAAxkBAAIxj2c45EdaH76knO_Xm1drcy3S4uqGAAL0BAAChl_IRZzzUO7vIgo4NgQ'
     },
     'recompensas2024': {
-        'documento': 'BQACAgEAAxkBAANJZuXs2N0B' 'GNgYFLeOGs0btJjgYkEAAvED' 'AAKYvDBHHRLaoQgyoHU2BA'
+        'documento': 'BQACAgEAAxkBAANJZuXs2N0BGNgYFLeOGs0btJjgYkEAAvEDAAKYvDBHHRLaoQgyoHU2BA'
     },
     'planotrabalho90dias': {
         'pdf': 'BQACAgEAAxkBAANXZuXtZG2ZHLUjyXFzvmpc32A0m28AAvQDAAKYvDBHeMndEw69BD02BA',
@@ -488,4 +488,15 @@ TELEGRAM_LINKS = [
 WHATSAPP_LINKS = [
     ("Grupo WhatsApp Principal", "https://chat.whatsapp.com/seu_grupo"),
 ]
+
+TRAINING_MATERIALS = {
+    'apoio': [
+        {"title": "📄 Manejo de Objeções", "file_id": "PLACEHOLDER_FILE_ID_OBJECTIONS"},
+        {"title": "📈 Plano de 90 Dias", "file_id": "PLACEHOLDER_FILE_ID_PLAN90"}
+    ],
+    'tutoriais': [
+        {"title": "🎥 Simular Preço Produto no APP", "file_id": "PLACEHOLDER_FILE_ID_TUTORIAL_APP"},
+        {"title": "💻 Como Usar o Escritório Virtual", "file_id": "PLACEHOLDER_FILE_ID_TUTORIAL_BACKOFFICE"}
+    ]
+}
 
