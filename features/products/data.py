@@ -1,18 +1,11 @@
 # NOME DO ARQUIVO: features/products/data.py
-# REFACTOR: Centraliza todos os file_ids de mídias e textos de pitch de venda com uma estrutura padronizada.
+# REFACTOR: Centraliza todos os file_ids de mídias e textos com uma estrutura padronizada e completa.
 
 """
 Este arquivo é a "fonte da verdade" para todas as mídias e textos do bot.
 Manter tudo centralizado aqui torna a atualização de file_ids e a adição
 de novos produtos uma tarefa simples, sem a necessidade de alterar a lógica
 nos arquivos de handlers.
-
-COMO DAR MANUTENÇÃO:
-1. Para adicionar um novo produto, adicione uma nova entrada dentro de MEDIA['produtos'].
-2. Use uma chave simples (ex: 'meunovo_produto').
-3. Adicione um 'label' que será o nome do produto no botão.
-4. Adicione as chaves 'foto', 'video' e/ou 'documento' com seus respectivos file_ids.
-5. Se houver um pitch de venda, adicione uma nova entrada em PITCH_DE_VENDA_TEXT com a mesma chave simples.
 """
 
 MEDIA = {
@@ -43,7 +36,7 @@ MEDIA = {
         'pdf': 'BQACAgEAAxkBAANXZuXtZG2ZHLUjyXFzvmpc32A0m28AAvQDAAKYvDBHeMndEw69BD02BA',
         'ppt': 'BQACAgEAAxkBAAIDa2bpX_0PhR7Iq9vZNaUmfRLxv4pjAALJBAACNzRIR5jQpmV2G0XjNgQ'
     },
-     'marketing_rede': {
+    'marketing_rede': {
         "video": "BAACAgEAAxkBAAIxpmc46CYHNY8qufZwAXQXw7z7eAspAAL2BAAChl_IRf-DsXQNjmvONgQ"
     },
     
@@ -416,7 +409,7 @@ Invista em *4Life NanoFactor Glutamine Prime* e sinta a diferença!
 
 Proteja a saúde dos seus filhos com estes tabletes mastigáveis que combinam Transfer Factor:
 
-1️⃣ *Defesas Fortificadas:* Aumente a resistência.
+1️⃣ *Defesas Fortificadas:* Aumente a sua resistência.
 2️⃣ *Sabor Irresistível:* Transforme a suplementação em um momento prazeroso.
 3️⃣ *Praticidade Para o Dia a Dia:* Leve os tabletes para onde quiser.
 4️⃣ *Saúde Para Toda a Família:* Cuide da imunidade de todos.
@@ -428,3 +421,59 @@ Proteja a saúde dos seus filhos com estes tabletes mastigáveis que combinam Tr
 *TF Mastigável*: Proteção! 😄
 """
 }
+
+
+# --- DADOS ADICIONAIS NECESSÁRIOS PARA OUTROS MÓDULOS ---
+
+CONVITES_TEXT = {
+    'convite_1': "📈 Convite Profissional\n\nOi [Nome do Convidado], como vai? Estou a expandir um projeto na área de bem-estar e tecnologia e lembrei-me de si pelo seu perfil dinâmico. Gostaria de apresentar uma oportunidade que pode ser do seu interesse. Podemos conversar por 15 minutos esta semana?",
+    'convite_2': "😊 Convite Amigável\n\nE aí, [Nome do Convidado]! Tudo bem? Estou a trabalhar em algo novo e super empolgante que acho que tem tudo a ver consigo. Que tal um café (virtual ou não) para eu te contar as novidades? Sem compromisso!",
+    'convite_3': "🌍 Convite Flexível\n\nOlá, [Nome do Convidado]. Vi que você busca novas oportunidades com flexibilidade. Estou a desenvolver um negócio que permite trabalhar de qualquer lugar e com horários flexíveis. Se tiver interesse em saber mais, me diga qual o melhor horário para uma breve chamada.",
+    'convite_4': "💵 Convite de Renda Extra\n\nOi, [Nome do Convidado]! Você já pensou em ter uma fonte de renda extra que não atrapalhe sua atividade principal? Encontrei uma forma inteligente de fazer isso e gostaria de compartilhar consigo. Tem um momento para conversarmos sobre?",
+    'convite_14': "🎁 Convite de Oportunidade\n\nOlá, [Nome do Convidado]. Sinto que você é uma pessoa que está sempre aberta a novas oportunidades. Tenho algo em mãos que pode ser exatamente o que você procura para o seu futuro. Gostaria de saber mais?",
+    'convite_15': "💡 Convite de Solução\n\nOi, [Nome do Convidado]. Muitas pessoas estão a procurar soluções para [mencionar um problema, ex: ter mais tempo, mais segurança financeira]. Estou a trabalhar com uma solução que tem ajudado muita gente nessa área. Se isto faz sentido para si, vamos conversar."
+}
+
+GLOSSARIO_TERMS = {
+    'upline': '**🔝 Upline:** A linha de distribuidores acima de você na organização, que o apoiam e orientam.',
+    'downline': '**👥 Downline:** A rede de distribuidores que você pessoalmente patrocinou e que foram patrocinados por eles.',
+    'pv': '**Pessoais (PV):** Pontos de Volume gerados pelas suas compras pessoais de produtos.',
+    'vo': '**Organizacional (VO):** Pontos de Volume totais gerados por toda a sua downline.',
+    'lp': '**Pontos de Lealdade (LP):** Pontos que você ganha através do Programa de Lealdade, que podem ser trocados por produtos.'
+}
+
+POSITIONS = {
+    "Associado": {
+        "emoji": "🔹",
+        "nivel_categoria": "Nível Inicial",
+        "pv_mensal": 50,
+        "linhas_qualificadas": None,
+        "vo_rede": 0,
+        "media_ganho": 50.00
+    },
+    "Construtor": {
+        "emoji": "🔸",
+        "nivel_categoria": "Nível Inicial",
+        "pv_mensal": 100,
+        "linhas_qualificadas": [{"quantidade": 3, "posicao": "Associado"}],
+        "vo_rede": 0,
+        "media_ganho": 200.00
+    },
+    "Diamante": {
+        "emoji": "💎",
+        "nivel_categoria": "Liderança",
+        "pv_mensal": 100,
+        "linhas_qualificadas": [{"quantidade": 6, "posicao": "Construtor"}],
+        "vo_rede": 3000,
+        "media_ganho": 1000.00
+    },
+    "Presidencial": {
+        "emoji": "⭐",
+        "nivel_categoria": "Liderança",
+        "pv_mensal": 100,
+        "linhas_qualificadas": [{"quantidade": 8, "posicao": "Diamante"}],
+        "vo_rede": 10000,
+        "media_ganho": 5000.00
+    }
+}
+
