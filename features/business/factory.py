@@ -3,12 +3,10 @@
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
-from utils.verification import group_member_required
 from features.products.data import MEDIA
 
 logger = logging.getLogger(__name__)
 
-@group_member_required
 async def fabrica4life(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Exibe o menu de vídeos da Fábrica 4Life."""
     keyboard = [
@@ -38,4 +36,3 @@ async def callback_fabrica4life(update: Update, context: ContextTypes.DEFAULT_TY
 
     for video_id in video_ids:
         await context.bot.send_video(chat_id=query.message.chat.id, video=video_id)
-

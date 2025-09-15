@@ -3,13 +3,11 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 import logging
-from utils.verification import group_member_required
 from utils.anti_flood import command_rate_limit
 from features.products.data import MEDIA
 
 logger = logging.getLogger(__name__)
 
-@group_member_required
 @command_rate_limit
 async def bonus_construtor(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Exibe as opções para o Bônus Construtor."""
@@ -54,4 +52,3 @@ async def callback_bonus_construtor(update: Update, context: ContextTypes.DEFAUL
     except Exception as e:
         logger.error(f"Erro ao processar callback {query.data}: {e}", exc_info=True)
         await context.bot.send_message(chat_id=chat_id, text="⚠️ Ocorreu um erro ao processar sua solicitação.")
-

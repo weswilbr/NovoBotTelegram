@@ -18,14 +18,11 @@ from features.creative import art_creator
 
 # Utilitários
 from utils.anti_flood import check_flood
-# CORREÇÃO: A linha abaixo foi removida, pois o ficheiro já não existe.
-# from utils.verification import group_member_required
 
 logger = logging.getLogger(__name__)
 
-# Dicionário de roteamento simplificado
+# Dicionário de roteamento para todos os callbacks do bot
 CALLBACK_ROUTING = {
-    # ... (o conteúdo do dicionário permanece o mesmo)
     'products_': products_callback_handler,
     'bonusconstrutor_': callback_bonus_construtor,
     'tabela_': tables.callback_tabelas,
@@ -35,7 +32,7 @@ CALLBACK_ROUTING = {
     'fabrica_': factory.callback_fabrica4life,
     'fatorestransf_': transfer_factors.callback_fatorestransf_handler,
     'folheteria_': brochures.callback_folheteria,
-    'glossario': glossary.callback_glossario,
+    'glossario_': glossary.callback_glossario,
     'baixar_glossario': glossary.callback_glossario,
     'apresentacao_': opportunity.callback_apresentacao_oportunidade,
     'detalhes_ranking_': ranking.enviar_detalhes_ranking,
@@ -58,13 +55,15 @@ CALLBACK_ROUTING = {
     'voltar_menu_artes_principal': art_creator.button_callback,
 }
 
-# CORREÇÃO: O decorador @group_member_required foi removido da função abaixo.
 async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Roteador principal para todas as queries de callback."""
     query = update.callback_query
-    if not (query and query.data): return
+    if not (query and query.data):
+        return
 
-    if not await check_flood(update): return
+    # Verifica se o usuário está clicando rápido demais
+    if not await check_flood(update):
+        return
 
     await query.answer()
     callback_data = query.data
@@ -72,6 +71,7 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
     try:
         handler_to_call = None
+        # Procura o handler correspondente no dicionário de roteamento
         for prefix, handler in CALLBACK_ROUTING.items():
             if callback_data.startswith(prefix):
                 handler_to_call = handler
@@ -80,10 +80,12 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         if handler_to_call:
             await handler_to_call(update, context)
         else:
+            # Se nenhum handler for encontrado, exibe a mensagem de ajuda como fallback
             logger.warning(f"Nenhum handler no roteador para: '{callback_data}'. Exibindo ajuda.")
             await ajuda(update, context)
 
     except BadRequest as e:
+        # Ignora o erro comum de "mensagem não modificada"
         if "message is not modified" not in str(e).lower():
             logger.error(f"Erro de BadRequest em '{callback_data}': {e}")
     except Exception as e:

@@ -3,12 +3,10 @@
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
-from utils.verification import group_member_required
 from features.products.data import GLOSSARIO_TERMS, MEDIA
 
 logger = logging.getLogger(__name__)
 
-@group_member_required
 async def glossario(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Exibe o menu do glossário."""
     keyboard = []
@@ -43,4 +41,3 @@ async def callback_glossario(update: Update, context: ContextTypes.DEFAULT_TYPE)
     elif action in GLOSSARIO_TERMS:
         definition = GLOSSARIO_TERMS[action]
         await query.edit_message_text(f"{definition}", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Voltar", callback_data='glossario_glossario')]]))
-

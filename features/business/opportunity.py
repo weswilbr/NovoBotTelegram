@@ -3,12 +3,10 @@
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
-from utils.verification import group_member_required
 from features.products.data import MEDIA
 
 logger = logging.getLogger(__name__)
 
-@group_member_required
 async def apresentacaooportunidade(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Exibe o menu de opções para a apresentação da oportunidade."""
     video_urls = MEDIA.get('opportunity_video_urls', {})
@@ -47,4 +45,3 @@ async def callback_apresentacao_oportunidade(update: Update, context: ContextTyp
     sender = context.bot.send_video if file_key == 'arquivo_plano_compacto' else context.bot.send_document
     await sender(chat_id=query.message.chat.id, document=file_id)
     await query.message.reply_text(f"✅ Arquivo enviado, {update.effective_user.first_name}!")
-

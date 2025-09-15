@@ -7,7 +7,6 @@ from telegram.ext import ContextTypes
 from telegram.error import TelegramError
 from telegram.constants import ParseMode 
 
-from utils.verification import group_member_required
 from .data import MEDIA, PITCH_DE_VENDA_TEXT
 
 logger = logging.getLogger(__name__)
@@ -64,7 +63,6 @@ def _get_social_kit_menu(product_key: str) -> InlineKeyboardMarkup:
 
 
 # --- Funções de Lógica e Handlers ---
-@group_member_required
 async def beneficiosprodutos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     text = _get_main_menu_text()
     reply_markup = _get_main_menu()

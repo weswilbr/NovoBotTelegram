@@ -3,12 +3,10 @@
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from utils.verification import group_member_required
 from features.products.data import MEDIA
 
 logger = logging.getLogger(__name__)
 
-@group_member_required
 async def fatorestransferencia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Exibe o menu sobre Fatores de Transferência."""
     keyboard = [
@@ -38,4 +36,3 @@ async def callback_fatorestransf_handler(update: Update, context: ContextTypes.D
     media_type, media_id = file_info['type'], file_info['id']
     sender = context.bot.send_video if media_type == 'video' else context.bot.send_document
     await sender(chat_id=query.message.chat.id, document=media_id)
-

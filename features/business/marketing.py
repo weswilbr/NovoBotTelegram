@@ -1,33 +1,44 @@
-# NOME DO ARQUIVO: features/business/marketing.py
-# REFACTOR: Handler para o comando /marketingrede, com opções de vídeo.
+# NOME DO ARQUIVO: features/business/kits.py
+# REFACTOR: Handler para o comando /seguimento, enviando kits de produtos e negócios.
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
-from utils.verification import group_member_required
+from telegram.error import BadRequest
 from features.products.data import MEDIA
 
 logger = logging.getLogger(__name__)
 
-@group_member_required
-async def marketing_rede(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Exibe opções para o vídeo de Marketing de Rede."""
+async def seguimento(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Exibe o menu para escolher o kit de seguimento."""
     keyboard = [
-        [InlineKeyboardButton("🔗 Assista no YouTube", url="https://www.youtube.com/watch?v=Fkeax_D_1m0")],
-        [InlineKeyboardButton("⬇️ Baixar Vídeo", callback_data="baixar_video_marketing")]
+        [InlineKeyboardButton("📦 Kit Produtos", callback_data='kit_produtos')],
+        [InlineKeyboardButton("💼 Kit Negócio", callback_data='kit_negocios')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
-        "📹 *Vídeo de Marketing de Rede:*\nEscolha uma das opções:",
-        reply_markup=reply_markup,
-        parse_mode='Markdown'
+        "Escolha o kit que deseja receber:",
+        reply_markup=reply_markup
     )
 
-async def handle_download_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Envia o vídeo de Marketing de Rede quando o botão de download é clicado."""
+async def handle_kit_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Envia o kit selecionado para o privado do usuário."""
     query = update.callback_query
-    video_id = MEDIA.get("marketing_rede", {}).get("video")
-    if video_id:
-        await context.bot.send_video(chat_id=query.message.chat.id, video=video_id)
-    else:
-        await query.message.reply_text("⚠️ Vídeo não encontrado.")
+    user_id = update.effective_user.id
+    original_chat_id = query.message.chat.id
 
+    kit_type = query.data # 'kit_produtos' or 'kit_negocios'
+    
+    # Esta parte é um exemplo e precisa dos file_ids corretos em data.py
+    # para funcionar.
+    if kit_type == 'kit_produtos':
+        await context.bot.send_message(
+            chat_id=original_chat_id,
+            text="📦 *Kit Produtos* enviado para o seu privado!",
+            parse_mode='Markdown'
+        )
+    elif kit_type == 'kit_negocios':
+        await context.bot.send_message(
+            chat_id=original_chat_id,
+            text="💼 *Kit Negócio* enviado para o seu privado!",
+            parse_mode='Markdown'
+        )

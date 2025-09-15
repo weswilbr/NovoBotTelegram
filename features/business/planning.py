@@ -3,12 +3,10 @@
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
-from utils.verification import group_member_required
 from features.products.data import MEDIA
 
 logger = logging.getLogger(__name__)
 
-@group_member_required
 async def enviar_planificacao(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Exibe os botões para baixar o plano de trabalho."""
     keyboard = [
@@ -28,4 +26,3 @@ async def callback_planificacao(update: Update, context: ContextTypes.DEFAULT_TY
         await context.bot.send_document(chat_id=query.message.chat.id, document=documento_id)
     else:
         await query.edit_message_text("Erro: Arquivo não encontrado.")
-
