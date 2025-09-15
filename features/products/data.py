@@ -30,7 +30,7 @@ MEDIA = {
         'documento': 'BQACAgEAAxkBAAIxj2c45EdaH76knO_Xm1drcy3S4uqGAAL0BAAChl_IRZzzUO7vIgo4NgQ'
     },
     'recompensas2024': {
-        'documento': 'BQACAgEAAxkBAANJZuXs2N0BGNgYFLeOGs0btJjgYkEAAvEDAAKYvDBHHRLaoQgyoHU2BA'
+        'documento': 'BQACAgEAAxkBAANJZuXs2N0B' 'GNgYFLeOGs0btJjgYkEAAvED' 'AAKYvDBHHRLaoQgyoHU2BA'
     },
     'planotrabalho90dias': {
         'pdf': 'BQACAgEAAxkBAANXZuXtZG2ZHLUjyXFzvmpc32A0m28AAvQDAAKYvDBHeMndEw69BD02BA',
@@ -476,4 +476,16 @@ POSITIONS = {
         "media_ganho": 5000.00
     }
 }
+
+YOUTUBE_LINKS = [
+    ("Canal Oficial 4Life", "https://www.youtube.com/c/4lifeoficial"),
+    ("Canal Equipe de Triunfo", "https://www.youtube.com/c/EquipedeTriunfo")
+]
+TELEGRAM_LINKS = [
+    ("Grupo de Suporte", "https://t.me/seu_grupo_de_suporte"),
+    ("Canal de Notícias", "https://t.me/seu_canal_de_noticias")
+]
+WHATSAPP_LINKS = [
+    ("Grupo WhatsApp Principal", "https://chat.whatsapp.com/seu_grupo"),
+]
 
