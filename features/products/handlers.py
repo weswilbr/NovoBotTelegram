@@ -64,15 +64,22 @@ def _get_social_kit_menu(product_key: str) -> InlineKeyboardMarkup:
 
 # --- Funções de Lógica e Handlers ---
 async def beneficiosprodutos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handler para o comando /produtos. Envia o menu principal."""
+    if not update.message:
+        return
+    text = _get_main_menu_text()
+    reply_markup = _get_main_menu()
+    await update.message.reply_text(text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+
+async def _show_main_menu(query: Update.callback_query) -> None:
+    """Edita a mensagem para mostrar o menu principal (usado pelo botão 'Voltar')."""
     text = _get_main_menu_text()
     reply_markup = _get_main_menu()
     try:
-        if update.callback_query:
-            await update.callback_query.edit_message_text(text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
-        elif update.message:
-            await update.message.reply_text(text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+        await query.edit_message_text(text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
     except TelegramError as e:
-        logger.warning(f"Erro ao mostrar menu de produtos: {e}")
+        if "message is not modified" not in str(e).lower():
+            logger.warning(f"Erro ao editar para o menu principal: {e}")
 
 async def _show_individual_products_submenu(query: Update.callback_query) -> None:
     text = _get_individual_submenu_text()
@@ -91,7 +98,7 @@ async def _send_product_file(query: Update.callback_query, context: ContextTypes
         return
     try:
         sender_map = {'foto': context.bot.send_photo, 'video': context.bot.send_video, 'documento': context.bot.send_document}
-        await sender_map[file_type](chat_id=query.message.chat_id, **{file_type: file_id})
+        await sender_map[file_type](chat_id=query.message.chat.id, **{file_type: file_id})
         await query.edit_message_text(f"✅ Material enviado!\n\nUse /produtos para voltar ao menu.", reply_markup=None)
     except (TelegramError, KeyError) as e:
         logger.error(f"Erro ao enviar arquivo '{file_type}' para '{product_key}': {e}")
@@ -156,11 +163,16 @@ async def products_callback_handler(update: Update, context: ContextTypes.DEFAUL
         parts = data.split('_')
         action = parts[1]
         
-        if action == 'main': await beneficiosprodutos(update, context)
-        elif action == 'submenu': await _show_individual_products_submenu(query)
-        elif action == 'show': await _show_product_options(query, parts[2])
-        elif action == 'send': await _send_product_file(query, context, parts[2], parts[3])
-        elif action == 'pitch': await _send_sales_pitch(query, parts[2])
+        if action == 'main': 
+            await _show_main_menu(query)
+        elif action == 'submenu': 
+            await _show_individual_products_submenu(query)
+        elif action == 'show': 
+            await _show_product_options(query, parts[2])
+        elif action == 'send': 
+            await _send_product_file(query, context, parts[2], parts[3])
+        elif action == 'pitch': 
+            await _send_sales_pitch(query, parts[2])
         elif action == 'social':
             if parts[2] == 'send':
                 await _send_social_kit_asset(query, context, parts[4], parts[3]) # ex: products_social_send_text_riovidaburst
