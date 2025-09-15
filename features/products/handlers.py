@@ -2,7 +2,7 @@
 # REFACTOR: Gerencia o comando /produtos com um "Kit de Mídia Social" padronizado e completo.
 
 import logging
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from telegram.error import TelegramError
 from telegram.constants import ParseMode 
@@ -27,10 +27,19 @@ def _get_main_menu() -> InlineKeyboardMarkup:
 
 def _get_individual_products_submenu() -> InlineKeyboardMarkup:
     buttons, row = [], []
-    for key, data in MEDIA.get('produtos', {}).items():
-        row.append(InlineKeyboardButton(data.get('label', key.capitalize()), callback_data=f'products_show_{key}'))
-        if len(row) == 2: buttons.append(row); row = []
-    if row: buttons.append(row)
+    # Adicionada verificação para garantir que 'produtos' existe e é um dicionário
+    product_items = MEDIA.get('produtos', {})
+    if isinstance(product_items, dict):
+        for key, data in product_items.items():
+            # Garante que 'data' é um dicionário antes de tentar acessar 'label'
+            if isinstance(data, dict):
+                label = data.get('label', key.capitalize())
+                row.append(InlineKeyboardButton(label, callback_data=f'products_show_{key}'))
+                if len(row) == 2:
+                    buttons.append(row)
+                    row = []
+    if row:
+        buttons.append(row)
     buttons.append([InlineKeyboardButton("🔙 Voltar ao Menu Principal", callback_data='products_main')])
     return InlineKeyboardMarkup(buttons)
 
@@ -98,7 +107,7 @@ async def _send_product_file(query: Update.callback_query, context: ContextTypes
         return
     try:
         sender_map = {'foto': context.bot.send_photo, 'video': context.bot.send_video, 'documento': context.bot.send_document}
-        await sender_map[file_type](chat_id=query.message.chat.id, **{file_type: file_id})
+        await sender_map[file_type](chat_id=query.message.chat_id, **{file_type: file_id})
         await query.edit_message_text(f"✅ Material enviado!\n\nUse /produtos para voltar ao menu.", reply_markup=None)
     except (TelegramError, KeyError) as e:
         logger.error(f"Erro ao enviar arquivo '{file_type}' para '{product_key}': {e}")
@@ -126,7 +135,6 @@ async def _send_social_kit_asset(query: Update.callback_query, context: ContextT
     kit_data = MEDIA.get('produtos', {}).get(product_key, {}).get('social_kit', {})
     content = None
     
-    # Mapeia o tipo de ativo para a chave no dicionário e o método de envio
     asset_map = {
         'text': {'key': 'copy_text', 'sender': 'reply_text', 'caption': '👇 *Texto para copiar e colar:*\n\n`{}`'},
         'story': {'key': 'story_image', 'sender': 'send_photo', 'caption': '✅ Imagem para Stories pronta para usar!'},
@@ -157,6 +165,9 @@ async def _send_social_kit_asset(query: Update.callback_query, context: ContextT
 # --- Roteador Principal ---
 async def products_callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
+    if not query:
+        return
+        
     await query.answer()
     try:
         data = query.data
@@ -175,12 +186,17 @@ async def products_callback_handler(update: Update, context: ContextTypes.DEFAUL
             await _send_sales_pitch(query, parts[2])
         elif action == 'social':
             if parts[2] == 'send':
-                await _send_social_kit_asset(query, context, parts[4], parts[3]) # ex: products_social_send_text_riovidaburst
+                await _send_social_kit_asset(query, context, parts[4], parts[3])
             else:
-                await _show_social_kit_menu(query, parts[2]) # ex: products_social_riovidaburst
-    except (IndexError, TelegramError) as e:
-        logger.error(f"Erro ao processar callback de produtos '{query.data}': {e}")
+                await _show_social_kit_menu(query, parts[2])
+    # CORREÇÃO: Captura qualquer exceção para evitar que o bot quebre e loga o erro completo.
+    except Exception as e:
+        logger.error(f"Erro ao processar callback de produtos '{query.data}': {e}", exc_info=True)
         try:
-            await query.edit_message_text("Ocorreu um erro, redirecionando para o menu principal.", reply_markup=_get_main_menu())
+            await query.edit_message_text(
+                "Ocorreu um erro ao processar sua solicitação. Tente usar o comando /produtos novamente.",
+                reply_markup=None
+            )
         except TelegramError:
             pass
+
