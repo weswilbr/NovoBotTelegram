@@ -18,18 +18,16 @@ from features.creative import art_creator
 
 # Utilitários
 from utils.anti_flood import check_flood
-from utils.verification import group_member_required
+# CORREÇÃO: A linha abaixo foi removida, pois o ficheiro já não existe.
+# from utils.verification import group_member_required
 
 logger = logging.getLogger(__name__)
 
 # Dicionário de roteamento simplificado
 CALLBACK_ROUTING = {
-    # Products
+    # ... (o conteúdo do dicionário permanece o mesmo)
     'products_': products_callback_handler,
-    # General
     'bonusconstrutor_': callback_bonus_construtor,
-    # Business
-    # Rota de 'planning' removida
     'tabela_': tables.callback_tabelas,
     'preco_': tables.callback_tabelas,
     'voltar_tabelas_principal': tables.callback_tabelas,
@@ -41,7 +39,6 @@ CALLBACK_ROUTING = {
     'baixar_glossario': glossary.callback_glossario,
     'apresentacao_': opportunity.callback_apresentacao_oportunidade,
     'detalhes_ranking_': ranking.enviar_detalhes_ranking,
-    # Community
     'fidelidade_': loyalty.callback_fidelidade,
     'convite_': invites.enviar_convite,
     'voltar_convites': invites.mostrar_convites,
@@ -49,14 +46,11 @@ CALLBACK_ROUTING = {
     'telegram': channels.handle_canais_callback,
     'whatsapp': channels.handle_canais_callback,
     'voltar_canais': channels.handle_canais_callback,
-    # Training
     'apoio': training.handle_treinamento_callback,
     'tutoriais': training.handle_treinamento_callback,
     'voltar': training.handle_treinamento_callback,
     'apoio_': training.handle_treinamento_callback,
     'tutoriais_': training.handle_treinamento_callback,
-    # Rota de 'reading_guide' removida
-    # Creative
     'arte_': art_creator.button_callback,
     'banner_': art_creator.button_callback,
     'menu_': art_creator.button_callback,
@@ -64,7 +58,7 @@ CALLBACK_ROUTING = {
     'voltar_menu_artes_principal': art_creator.button_callback,
 }
 
-@group_member_required
+# CORREÇÃO: O decorador @group_member_required foi removido da função abaixo.
 async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Roteador principal para todas as queries de callback."""
     query = update.callback_query
