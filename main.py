@@ -2,7 +2,7 @@
 # --- Importações Padrão e de Terceiros ---
 import logging
 import sys
-from fastapi import FastAPI, Request, Response, BackgroundTasks # ADICIONADO: BackgroundTasks
+from fastapi import FastAPI, Request, Response, BackgroundTasks
 from telegram import Update
 from telegram.ext import (
     Application, ApplicationBuilder, CommandHandler, MessageHandler,
@@ -61,59 +61,61 @@ if not BOT_TOKEN:
     sys.exit(1)
 
 # --- Construtor do Bot ---
+# Garante que temos apenas uma instância da aplicação
 ptb_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 # --- Registro dos Handlers ---
-# 1. Comandos de usuário
-command_handlers = {
-    "start": start, "ajuda": ajuda, "produtos": beneficiosprodutos,
-    "apresentacaooportunidade": apresentacaooportunidade, "folheteria": folheteria,
-    "glossario": glossario, "marketingrede": marketing_rede, "recompensas": recompensas,
-    "fatorestransferencia": fatorestransferencia, "fabrica4life": fabrica4life,
-    "bonusconstrutor": bonus_construtor, "regras": mostrar_regras, "convite": mostrar_convites,
-    "artes": artes, "treinamento": treinamento, "ranking": mostrar_ranking,
-    "canais": canais, "fidelidade": fidelidade, "tabelas": tabelas_menu
-}
-for command, handler in command_handlers.items():
-    ptb_app.add_handler(CommandHandler(command, handler))
+def register_handlers(app: Application):
+    # 1. Comandos de usuário
+    command_handlers = {
+        "start": start, "ajuda": ajuda, "produtos": beneficiosprodutos,
+        "apresentacaooportunidade": apresentacaooportunidade, "folheteria": folheteria,
+        "glossario": glossario, "marketingrede": marketing_rede, "recompensas": recompensas,
+        "fatorestransferencia": fatorestransferencia, "fabrica4life": fabrica4life,
+        "bonusconstrutor": bonus_construtor, "regras": mostrar_regras, "convite": mostrar_convites,
+        "artes": artes, "treinamento": treinamento, "ranking": mostrar_ranking,
+        "canais": canais, "fidelidade": fidelidade, "tabelas": tabelas_menu
+    }
+    for command, handler in command_handlers.items():
+        app.add_handler(CommandHandler(command, handler))
 
-ptb_app.add_handler(loja_handler)
+    app.add_handler(loja_handler)
 
-# 2. Comandos de admin
-admin_command_handlers = {
-    "listaradmins": listar_admins, "silenciar": silenciar, "banir": banir,
-    "desbanir": desbanir, "fixar": fixar, "desfixar": desfixar,
-    "enviartextocanal": enviartextocanal
-}
-for command, handler in admin_command_handlers.items():
-    ptb_app.add_handler(CommandHandler(command, handler))
+    # 2. Comandos de admin
+    admin_command_handlers = {
+        "listaradmins": listar_admins, "silenciar": silenciar, "banir": banir,
+        "desbanir": desbanir, "fixar": fixar, "desfixar": desfixar,
+        "enviartextocanal": enviartextocanal
+    }
+    for command, handler in admin_command_handlers.items():
+        app.add_handler(CommandHandler(command, handler))
 
-# 3. Callbacks e mensagens
-ptb_app.add_handler(CallbackQueryHandler(
-    welcome_callbacks_handler,
-    pattern=f"^({CALLBACK_REGRAS}|{CALLBACK_INICIO}|{CALLBACK_MENU}|ajuda_.*)$"
-))
-ptb_app.add_handler(CallbackQueryHandler(handle_verification_callback, pattern=f"^{VERIFY_MEMBER_CALLBACK}$"))
-ptb_app.add_handler(CallbackQueryHandler(callback_router))
-ptb_app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, darboasvindas_handler))
-ptb_app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE & ~filters.COMMAND, handle_private_message))
-if CANAL_ID_2:
-    ptb_app.add_handler(MessageHandler(
-        filters.TEXT & ~filters.COMMAND & filters.Chat(chat_id=int(CANAL_ID_2)),
-        handle_unverified_text_message
+    # 3. Callbacks e mensagens
+    app.add_handler(CallbackQueryHandler(
+        welcome_callbacks_handler,
+        pattern=f"^({CALLBACK_REGRAS}|{CALLBACK_INICIO}|{CALLBACK_MENU}|ajuda_.*)$"
     ))
+    app.add_handler(CallbackQueryHandler(handle_verification_callback, pattern=f"^{VERIFY_MEMBER_CALLBACK}$"))
+    app.add_handler(CallbackQueryHandler(callback_router))
+    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, darboasvindas_handler))
+    app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE & ~filters.COMMAND, handle_private_message))
+    if CANAL_ID_2:
+        app.add_handler(MessageHandler(
+            filters.TEXT & ~filters.COMMAND & filters.Chat(chat_id=int(CANAL_ID_2)),
+            handle_unverified_text_message
+        ))
 
-# 4. Utilitários
-ptb_app.add_handler(get_file_id_handler())
-ptb_app.add_handler(setup_group_id_handler())
-ptb_app.add_error_handler(error_handler)
+    # 4. Utilitários
+    app.add_handler(get_file_id_handler())
+    app.add_handler(setup_group_id_handler())
+    app.add_error_handler(error_handler)
 
+register_handlers(ptb_app)
 
 # --- Função Auxiliar para Background Task ---
 async def process_update_task(update: Update, app: Application) -> None:
     """Função para ser executada em segundo plano para processar o update."""
     await app.process_update(update)
-
 
 # --- FastAPI App ---
 app = FastAPI()
@@ -124,17 +126,14 @@ async def webhook(request: Request, background_tasks: BackgroundTasks) -> Respon
     Recebe update do Telegram e o processa em segundo plano para evitar o erro 'Event loop is closed'.
     """
     try:
-        # A inicialização é feita uma vez por instância da função serverless
         if not ptb_app._initialized:
             await ptb_app.initialize()
         
         data = await request.json()
         update = Update.de_json(data, ptb_app.bot)
 
-        # Adiciona o processamento pesado à fila de tarefas de segundo plano
         background_tasks.add_task(process_update_task, update, ptb_app)
         
-        # Retorna a resposta 200 OK imediatamente para o Telegram
         return Response(status_code=200)
     except Exception as e:
         logger.exception("Erro ao receber ou enfileirar update do Telegram")
@@ -144,3 +143,4 @@ async def webhook(request: Request, background_tasks: BackgroundTasks) -> Respon
 async def healthcheck():
     """Healthcheck endpoint."""
     return {"status": "ok", "message": "Bot está rodando e pronto para receber webhooks"}
+
