@@ -1,37 +1,30 @@
 # NOME DO ARQUIVO: features/products/handlers.py
-# REFACTOR: Totalmente reescrito para usar a nova estrutura de dados 'PRODUTOS'
-#           e com melhorias de usabilidade, como paginação.
+# Menu de produtos com paginação (sem antiflood)
 
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
 
-from .data import PRODUTOS
-from utils.anti_flood import command_rate_limit
+from .data import PRODUTOS     # dados vindos do YAML
 
 logger = logging.getLogger(__name__)
 
-# --------------------------------------------------------------------------- #
-# Configurações
-# --------------------------------------------------------------------------- #
-ITEMS_PER_PAGE = 6          # botões por página
+ITEMS_PER_PAGE = 6  # botões por página
 
-# --------------------------------------------------------------------------- #
-# /produtos → primeira página
-# --------------------------------------------------------------------------- #
-@command_rate_limit
+# ------------------------------------------------------------------- #
+# Comando /produtos
+# ------------------------------------------------------------------- #
 async def beneficiosprodutos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Exibe a primeira página do menu de produtos."""
     await send_product_menu_page(update, context, page=0)
 
-# --------------------------------------------------------------------------- #
-# Funções de menu / paginação
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------- #
+# Página de menu
+# ------------------------------------------------------------------- #
 async def send_product_menu_page(
     update: Update, context: ContextTypes.DEFAULT_TYPE, page: int = 0
 ) -> None:
-    """Envia uma página específica do menu de produtos."""
     query = update.callback_query
 
     if not PRODUTOS:
@@ -50,8 +43,7 @@ async def send_product_menu_page(
     for key in page_items:
         row.append(
             InlineKeyboardButton(
-                PRODUTOS[key]["label"],
-                callback_data=f"prod_details_{key}",
+                PRODUTOS[key]["label"], callback_data=f"prod_details_{key}"
             )
         )
         if len(row) == 2:
@@ -60,7 +52,6 @@ async def send_product_menu_page(
     if row:
         keyboard.append(row)
 
-    # navegação
     nav = []
     if page > 0:
         nav.append(InlineKeyboardButton("⬅️ Anterior", callback_data=f"prod_page_{page-1}"))
@@ -78,13 +69,12 @@ async def send_product_menu_page(
     elif update.message:
         await update.message.reply_text(text, reply_markup=reply_markup)
 
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------- #
 # Roteador de callbacks
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------- #
 async def products_callback_router(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    """Roteia todos os callbacks que começam com 'prod_'."""
     query = update.callback_query
     if not (query and query.data):
         return
@@ -107,18 +97,15 @@ async def products_callback_router(
     elif data.startswith("prod_social_"):
         await send_social_kit(update, context, product_key=data.split("_")[-1])
 
-# --------------------------------------------------------------------------- #
-# ALIAS LEGADO  -> linha crucial para o ImportError desaparecer
-# --------------------------------------------------------------------------- #
-products_callback_handler = products_callback_router  # NÃO REMOVA
+# Alias para manter core/handlers intacto
+products_callback_handler = products_callback_router
 
-# --------------------------------------------------------------------------- #
-# Funções auxiliares
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------- #
+# Sub-funções
+# ------------------------------------------------------------------- #
 async def show_product_details(
     update: Update, context: ContextTypes.DEFAULT_TYPE, product_key: str
 ) -> None:
-    """Exibe o submenu de um produto."""
     query = update.callback_query
     product = PRODUTOS.get(product_key)
 
@@ -135,16 +122,14 @@ async def show_product_details(
     keyboard = []
     media = product.get("media", {})
 
-    # botões de mídia
-    media_btns = []
+    media_buttons = []
     if media.get("video"):
-        media_btns.append(InlineKeyboardButton("🎬 Vídeo", callback_data=f"prod_media_{product_key}_video"))
+        media_buttons.append(InlineKeyboardButton("🎬 Vídeo", callback_data=f"prod_media_{product_key}_video"))
     if media.get("documento"):
-        media_btns.append(InlineKeyboardButton("📄 Folheto", callback_data=f"prod_media_{product_key}_documento"))
-    if media_btns:
-        keyboard.append(media_btns)
+        media_buttons.append(InlineKeyboardButton("📄 Folheto", callback_data=f"prod_media_{product_key}_documento"))
+    if media_buttons:
+        keyboard.append(media_buttons)
 
-    # botões adicionais
     other = []
     if product.get("pitch"):
         other.append(InlineKeyboardButton("💰 Pitch Venda", callback_data=f"prod_pitch_{product_key}"))
@@ -170,12 +155,9 @@ async def show_product_details(
         await query.message.edit_text(caption, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
 
 async def send_product_media(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE,
-    product_key: str,
-    media_type: str,
+    update: Update, context: ContextTypes.DEFAULT_TYPE,
+    product_key: str, media_type: str
 ) -> None:
-    """Envia vídeo ou documento do produto."""
     query = update.callback_query
     await query.answer()
 
@@ -228,9 +210,9 @@ async def send_social_kit(
     )
     await query.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
 
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------- #
 # Export explícito
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------- #
 __all__ = [
     "beneficiosprodutos",
     "products_callback_router",
