@@ -1,40 +1,43 @@
 # NOME DO ARQUIVO: features/products/handlers.py
-# Menu de produtos com paginação (sem antiflood)
+# Menu de produtos paginado (sem antiflood) – versão 100 % funcional
 
 import logging
+import telegram                              # ← usado para capturar BadRequest
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
 
-from .data import PRODUTOS     # dados vindos do YAML
+from .data import PRODUTOS                   # dados vindos do YAML
 
 logger = logging.getLogger(__name__)
 
-ITEMS_PER_PAGE = 6  # botões por página
-
-# ------------------------------------------------------------------- #
-# Comando /produtos
-# ------------------------------------------------------------------- #
-async def beneficiosprodutos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Exibe a primeira página do menu de produtos."""
+ITEMS_PER_PAGE = 6                           # nº de botões por página
+# --------------------------------------------------------------------------- #
+# /produtos – primeira página
+# --------------------------------------------------------------------------- #
+async def beneficiosprodutos(update: Update,
+                              context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Comando /produtos: abre a página 0 do menu."""
     await send_product_menu_page(update, context, page=0)
 
-# ------------------------------------------------------------------- #
-# Página de menu
-# ------------------------------------------------------------------- #
-async def send_product_menu_page(
-    update: Update, context: ContextTypes.DEFAULT_TYPE, page: int = 0
-) -> None:
+# --------------------------------------------------------------------------- #
+# Função que constrói/envia (ou edita) a página pedida
+# --------------------------------------------------------------------------- #
+async def send_product_menu_page(update: Update,
+                                 context: ContextTypes.DEFAULT_TYPE,
+                                 page: int = 0) -> None:
     query = update.callback_query
 
+    # Verificação de produtos
     if not PRODUTOS:
         text = "⚠️ Nenhum produto foi encontrado. Verifique a configuração."
         if query:
             await query.message.edit_text(text)
-        elif update.message:
+        else:
             await update.message.reply_text(text)
         return
 
+    # ---------- monta teclado ----------
     product_keys = sorted(PRODUTOS.keys())
     start, end = page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE
     page_items = product_keys[start:end]
@@ -43,7 +46,8 @@ async def send_product_menu_page(
     for key in page_items:
         row.append(
             InlineKeyboardButton(
-                PRODUTOS[key]["label"], callback_data=f"prod_details_{key}"
+                PRODUTOS[key]["label"],
+                callback_data=f"prod_details_{key}",
             )
         )
         if len(row) == 2:
@@ -54,27 +58,34 @@ async def send_product_menu_page(
 
     nav = []
     if page > 0:
-        nav.append(InlineKeyboardButton("⬅️ Anterior", callback_data=f"prod_page_{page-1}"))
+        nav.append(InlineKeyboardButton("⬅️ Anterior",
+                                        callback_data=f"prod_page_{page-1}"))
     if end < len(product_keys):
-        nav.append(InlineKeyboardButton("Próxima ➡️", callback_data=f"prod_page_{page+1}"))
+        nav.append(InlineKeyboardButton("Próxima ➡️",
+                                        callback_data=f"prod_page_{page+1}"))
     if nav:
         keyboard.append(nav)
 
     reply_markup = InlineKeyboardMarkup(keyboard)
     text = "Selecione um produto para ver os detalhes:"
 
+    # ---------- envia / edita ----------
     if query:
         await query.answer()
-        await query.message.edit_text(text, reply_markup=reply_markup)
-    elif update.message:
+        try:
+            await query.message.edit_text(text, reply_markup=reply_markup)
+        except telegram.error.BadRequest as e:
+            # Evita erro “message is not modified” quando o usuário clica rápido
+            if "message is not modified" not in str(e).lower():
+                raise
+    else:
         await update.message.reply_text(text, reply_markup=reply_markup)
 
-# ------------------------------------------------------------------- #
-# Roteador de callbacks
-# ------------------------------------------------------------------- #
-async def products_callback_router(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> None:
+# --------------------------------------------------------------------------- #
+# Roteador de callbacks (prefixo 'prod_')
+# --------------------------------------------------------------------------- #
+async def products_callback_router(update: Update,
+                                   context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     if not (query and query.data):
         return
@@ -82,30 +93,34 @@ async def products_callback_router(
     data = query.data
 
     if data.startswith("prod_page_"):
-        await send_product_menu_page(update, context, page=int(data.split("_")[-1]))
+        await send_product_menu_page(update, context,
+                                     page=int(data.split("_")[-1]))
 
     elif data.startswith("prod_details_"):
-        await show_product_details(update, context, product_key=data.split("_")[-1])
+        await show_product_details(update, context,
+                                   product_key=data.split("_")[-1])
 
     elif data.startswith("prod_media_"):
         _, _, key, media_type = data.split("_")
         await send_product_media(update, context, key, media_type)
 
     elif data.startswith("prod_pitch_"):
-        await send_product_pitch(update, context, product_key=data.split("_")[-1])
+        await send_product_pitch(update, context,
+                                 product_key=data.split("_")[-1])
 
     elif data.startswith("prod_social_"):
-        await send_social_kit(update, context, product_key=data.split("_")[-1])
+        await send_social_kit(update, context,
+                              product_key=data.split("_")[-1])
 
-# Alias para manter core/handlers intacto
+# Alias para core/handlers.py
 products_callback_handler = products_callback_router
 
-# ------------------------------------------------------------------- #
-# Sub-funções
-# ------------------------------------------------------------------- #
-async def show_product_details(
-    update: Update, context: ContextTypes.DEFAULT_TYPE, product_key: str
-) -> None:
+# --------------------------------------------------------------------------- #
+# Sub-funções: detalhes, mídias, pitch, social kit
+# --------------------------------------------------------------------------- #
+async def show_product_details(update: Update,
+                               context: ContextTypes.DEFAULT_TYPE,
+                               product_key: str) -> None:
     query = update.callback_query
     product = PRODUTOS.get(product_key)
 
@@ -122,23 +137,30 @@ async def show_product_details(
     keyboard = []
     media = product.get("media", {})
 
+    # Botões de mídia
     media_buttons = []
     if media.get("video"):
-        media_buttons.append(InlineKeyboardButton("🎬 Vídeo", callback_data=f"prod_media_{product_key}_video"))
+        media_buttons.append(InlineKeyboardButton("🎬 Vídeo",
+                                                  callback_data=f"prod_media_{product_key}_video"))
     if media.get("documento"):
-        media_buttons.append(InlineKeyboardButton("📄 Folheto", callback_data=f"prod_media_{product_key}_documento"))
+        media_buttons.append(InlineKeyboardButton("📄 Folheto",
+                                                  callback_data=f"prod_media_{product_key}_documento"))
     if media_buttons:
         keyboard.append(media_buttons)
 
-    other = []
+    # Botões extras
+    extra_buttons = []
     if product.get("pitch"):
-        other.append(InlineKeyboardButton("💰 Pitch Venda", callback_data=f"prod_pitch_{product_key}"))
+        extra_buttons.append(InlineKeyboardButton("💰 Pitch Venda",
+                                                  callback_data=f"prod_pitch_{product_key}"))
     if product.get("social_kit"):
-        other.append(InlineKeyboardButton("📲 Kit Social", callback_data=f"prod_social_{product_key}"))
-    if other:
-        keyboard.append(other)
+        extra_buttons.append(InlineKeyboardButton("📲 Kit Social",
+                                                  callback_data=f"prod_social_{product_key}"))
+    if extra_buttons:
+        keyboard.append(extra_buttons)
 
-    keyboard.append([InlineKeyboardButton("⬅️ Voltar ao Menu", callback_data="prod_page_0")])
+    keyboard.append([InlineKeyboardButton("⬅️ Voltar ao Menu",
+                                          callback_data="prod_page_0")])
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     photo_id = media.get("foto")
@@ -152,12 +174,15 @@ async def show_product_details(
             reply_markup=reply_markup,
         )
     else:
-        await query.message.edit_text(caption, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+        await query.message.edit_text(
+            caption, reply_markup=reply_markup,
+            parse_mode=ParseMode.MARKDOWN
+        )
 
-async def send_product_media(
-    update: Update, context: ContextTypes.DEFAULT_TYPE,
-    product_key: str, media_type: str
-) -> None:
+# --------------------------------------------------------------------------- #
+async def send_product_media(update: Update,
+                             context: ContextTypes.DEFAULT_TYPE,
+                             product_key: str, media_type: str) -> None:
     query = update.callback_query
     await query.answer()
 
@@ -166,21 +191,24 @@ async def send_product_media(
     media_id = product.get("media", {}).get(media_type)
 
     if not media_id:
-        await context.bot.send_message(chat_id, f"⚠️ Mídia '{media_type}' não encontrada.")
+        await context.bot.send_message(
+            chat_id, f"⚠️ Mídia '{media_type}' não encontrada."
+        )
         return
 
     try:
         if media_type == "video":
-            await context.bot.send_video(chat_id=chat_id, video=media_id)
-        elif media_type == "documento":
-            await context.bot.send_document(chat_id=chat_id, document=media_id)
+            await context.bot.send_video(chat_id, media_id)
+        else:
+            await context.bot.send_document(chat_id, media_id)
     except Exception as e:
         logger.error("Erro ao enviar mídia %s/%s: %s", product_key, media_type, e)
-        await context.bot.send_message(chat_id, "Ocorreu um erro ao enviar a mídia.")
+        await context.bot.send_message(chat_id, "⚠️ Erro ao enviar a mídia.")
 
-async def send_product_pitch(
-    update: Update, context: ContextTypes.DEFAULT_TYPE, product_key: str
-) -> None:
+# --------------------------------------------------------------------------- #
+async def send_product_pitch(update: Update,
+                             context: ContextTypes.DEFAULT_TYPE,
+                             product_key: str) -> None:
     query = update.callback_query
     await query.answer()
 
@@ -190,9 +218,10 @@ async def send_product_pitch(
     else:
         await query.message.reply_text("⚠️ Pitch de venda não encontrado.")
 
-async def send_social_kit(
-    update: Update, context: ContextTypes.DEFAULT_TYPE, product_key: str
-) -> None:
+# --------------------------------------------------------------------------- #
+async def send_social_kit(update: Update,
+                          context: ContextTypes.DEFAULT_TYPE,
+                          product_key: str) -> None:
     query = update.callback_query
     await query.answer()
 
@@ -210,9 +239,7 @@ async def send_social_kit(
     )
     await query.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
 
-# ------------------------------------------------------------------- #
-# Export explícito
-# ------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 __all__ = [
     "beneficiosprodutos",
     "products_callback_router",
