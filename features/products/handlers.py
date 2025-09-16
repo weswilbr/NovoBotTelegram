@@ -86,7 +86,7 @@ async def _back_to_menu(query, context):
 
 # .....................................................................
 async def _submenu(query, context, key: str):
-    """Exibe submenu; funciona mesmo sem foto válida."""
+    """Exibe o submenu de um produto (versão apenas texto)."""
     product = PRODUTOS.get(key)
     if not product:
         await query.message.reply_text("⚠️ Produto não encontrado."); return
@@ -112,35 +112,19 @@ async def _submenu(query, context, key: str):
     keyboard.append([InlineKeyboardButton("🔙 Voltar", callback_data="prod_back")])
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    caption = escape_markdown(f"*{product['label']}*\n\nEscolha uma opção:", version=2)
-    photo_id = media.get("foto")
+    # --- mensagem ---
+    text = escape_markdown(f"*{product['label']}*\n\nEscolha uma opção:", version=2)
 
-    # tenta foto
-    if photo_id:
-        try:
-            await context.bot.send_photo(
-                chat_id=query.message.chat_id,
-                photo=photo_id,
-                caption=caption,
-                parse_mode="MarkdownV2",
-                reply_markup=reply_markup
-            )
-            try:
-                await query.message.delete()
-            except BadRequest:
-                pass
-            return
-        except BadRequest as e:
-            logger.warning("Foto inválida p/ %s: %s", key, e)
-
-    # fallback texto+botões
+    # Sempre edita a mensagem anterior para exibir o menu de texto
     try:
-        await query.message.edit_text(caption, parse_mode="MarkdownV2",
-                                      reply_markup=reply_markup)
-    except BadRequest:
-        await context.bot.send_message(query.message.chat_id, caption,
-                                       parse_mode="MarkdownV2",
-                                       reply_markup=reply_markup)
+        await query.message.edit_text(
+            text,
+            parse_mode="MarkdownV2",
+            reply_markup=reply_markup
+        )
+    except BadRequest as e:
+        if "message is not modified" not in str(e).lower():
+            logger.error("Erro ao editar a mensagem no submenu de produtos: %s", e)
 
 # .....................................................................
 async def _send_media(query, context, key: str, mtype: str):
