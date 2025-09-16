@@ -8,7 +8,6 @@ from features.products.data import MEDIA
 
 logger = logging.getLogger(__name__)
 
-@group_member_required
 async def leitura(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Exibe o menu para escolher a versão do Guia do Êxito."""
     keyboard = [
